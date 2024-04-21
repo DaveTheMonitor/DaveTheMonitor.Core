@@ -1,8 +1,8 @@
-﻿# 0.1.0-dev
+﻿# v0.1.0-dev
 
 Initial release
 
-# 0.1.1-dev
+# v0.1.1-dev
 
 ## General Changes
 
@@ -46,7 +46,7 @@ Added save data to the `Effects` module.
 Renamed `CommandRegister` to `CommandRegistry`
 - Earlier in development the `DefinitionRegistry` was named `DefinitionRegister` before being renamed. `CommandRegister` has now been renamed for consistency.
 
-# 0.1.2-dev
+# v0.1.2-dev
 
 This update is primarily focused on C# API cleanup and documentation. If you aren't a C# developer, most of these changes won't affect you.
 
