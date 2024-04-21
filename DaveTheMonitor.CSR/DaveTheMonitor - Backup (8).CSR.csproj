@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.1.303" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DaveTheMonitor.Core.Biomes\DaveTheMonitor.Core.Biomes.csproj" />
+    <ProjectReference Include="..\DaveTheMonitor.Core.Effects\DaveTheMonitor.Core.Effects.csproj" />
+    <ProjectReference Include="..\DaveTheMonitor.Core.Particles\DaveTheMonitor.Core.Particles.csproj" />
+    <ProjectReference Include="..\DaveTheMonitor.Core\DaveTheMonitor.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="StudioForge.BlockWorld">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.BlockWorld.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Components">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Components.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Core">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Game">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Game.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.GamerServices">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.GamerServices.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.GUI">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.GUI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Integration">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Integration.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Net">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Net.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Renderers">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Renderers.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Services">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Services.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StudioForge.TotalMiner.API">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.TotalMiner.API.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

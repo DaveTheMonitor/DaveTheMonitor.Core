@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.1.303" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="StudioForge.BlockWorld">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.BlockWorld.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Components">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Components.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Core">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Game">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.GamerServices">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.GamerServices.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.GUI">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.GUI.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Integration">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Integration.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Net">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Renderers">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Renderers.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Services">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.Engine.Services.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.TotalMiner.API">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.TotalMiner.API.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\DaveTheMonitor.Core\Assembly\0Harmony.dll" />
+  </ItemGroup>
+</Project>

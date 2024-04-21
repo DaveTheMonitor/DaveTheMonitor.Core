@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Platforms>x64</Platforms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.1.303" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>Assembly\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DaveTheMonitor.Scripts">
+      <HintPath>Assembly\DaveTheMonitor.Scripts.dll</HintPath>
+    </Reference>
+    <Reference Include="StudioForge.BlockWorld">
+      <HintPath>Assembly\StudioForge.BlockWorld.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Components">
+      <HintPath>Assembly\StudioForge.Engine.Components.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Core">
+      <HintPath>Assembly\StudioForge.Engine.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Game">
+      <HintPath>Assembly\StudioForge.Engine.Game.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.GamerServices">
+      <HintPath>Assembly\StudioForge.Engine.GamerServices.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.GUI">
+      <HintPath>Assembly\StudioForge.Engine.GUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Integration">
+      <HintPath>Assembly\StudioForge.Engine.Integration.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Net">
+      <HintPath>Assembly\StudioForge.Engine.Net.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Renderers">
+      <HintPath>Assembly\StudioForge.Engine.Renderers.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.Engine.Services">
+      <HintPath>Assembly\StudioForge.Engine.Services.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="StudioForge.TotalMiner.API">
+      <HintPath>Assembly\StudioForge.TotalMiner.API.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
