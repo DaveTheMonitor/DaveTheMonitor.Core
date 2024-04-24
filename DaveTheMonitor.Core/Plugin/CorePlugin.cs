@@ -1,9 +1,11 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Components;
+using DaveTheMonitor.Core.Graphics;
 using DaveTheMonitor.Core.Patches;
 using DaveTheMonitor.Scripts;
 using DaveTheMonitor.Scripts.Compiler;
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.BlockWorld;
 using StudioForge.TotalMiner;
@@ -25,14 +27,17 @@ namespace DaveTheMonitor.Core.Plugin
         /// Main main CorePlugin instance.
         /// </summary>
         public static CorePlugin Instance { get; private set; }
+
         /// <summary>
         /// Core's ITMMod.
         /// </summary>
         public ITMMod TMMod { get; private set; }
+
         /// <summary>
         /// Core's ICoreMod.
         /// </summary>
         public ICoreMod CoreMod { get; private set; }
+
         /// <summary>
         /// The main game instance.
         /// </summary>
@@ -109,6 +114,7 @@ namespace DaveTheMonitor.Core.Plugin
             Instance = this;
             _patchHelper = new PatchHelper("DaveTheMonitor.Core");
             _patchHelper.PatchAll(Assembly.GetExecutingAssembly());
+            DrawGlobals.WorldDrawOptions = WorldDrawOptions.All;
         }
 
         /// <summary>
@@ -167,11 +173,9 @@ namespace DaveTheMonitor.Core.Plugin
             foreach (Mod mod in Game.ModManager.GetAllActivePlugins())
             {
                 mod.Plugin.InitializeGame(Game);
-                foreach (ICoreWorld world in _game.GetAllWorlds())
-                {
-                    mod.Plugin.InitializeWorld(world);
-                }
             }
+
+            _game.InitializeAllWorlds();
 
             _game.RegisterCommands();
             _game.GetModules();

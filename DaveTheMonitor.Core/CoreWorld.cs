@@ -1,11 +1,17 @@
 ﻿using DaveTheMonitor.Core.API;
+using DaveTheMonitor.Core.Graphics;
 using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Core.Scripts;
+using DaveTheMonitor.Core.Wrappers;
 using DaveTheMonitor.Scripts;
 using DaveTheMonitor.Scripts.Attributes;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
 using StudioForge.BlockWorld;
+using StudioForge.Engine;
 using StudioForge.Engine.Core;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
@@ -22,6 +28,8 @@ namespace DaveTheMonitor.Core
         public ITMWorld TMWorld => Game.TMGame.World;
         public ICoreGame Game { get; private set; }
         public string Id { get; private set; }
+        public int NumId { get; private set; }
+        public WorldDrawOptions DrawOptions { get; set; }
         public ICoreActorManager ActorManager => _actorManager;
         public ITMEntityManager TMEntityManager => TMWorld.EntityManager;
         public ITMEnvManager TMEnvironmentManager => TMWorld.EnvironManager;
@@ -48,8 +56,13 @@ namespace DaveTheMonitor.Core
         public float WindFactor => Game.TMGame.GetWindFactor();
         public event ComponentEventHandler ComponentPasted;
         private ActorManager _actorManager;
-        private CoreMap _map;
+        private ICoreMap _map;
         private CoreDataCollection<ICoreWorld> _data;
+        private bool _hasChunkLoader;
+        private bool _hasRenderer;
+        private ChunkLoader _chunkLoader;
+        private ChunkLoaderPriority _chunkLoaderPriority;
+        private MapRenderer _renderer;
 
         #region Scripts
 
@@ -225,7 +238,7 @@ namespace DaveTheMonitor.Core
 
             foreach (ICoreActor actor in ActorManager.Actors)
             {
-                if (zone.IsInZone(_map.BWMap, actor.HitBoundingBox))
+                if (zone.IsInZone((Map)_map.TMMap, actor.HitBoundingBox))
                 {
                     arr ??= new ScriptArrayActor();
                     arr.Add(runtime, actor);
@@ -290,7 +303,7 @@ namespace DaveTheMonitor.Core
 
             foreach (ICoreActor actor in ActorManager.Actors)
             {
-                if (zone.IsInZone(_map.BWMap, actor.HitBoundingBox))
+                if (zone.IsInZone((Map)_map.TMMap, actor.HitBoundingBox))
                 {
                     count++;
                 }
@@ -364,7 +377,7 @@ namespace DaveTheMonitor.Core
 
             foreach (ICorePlayer player in ActorManager.Players)
             {
-                if (zone.IsInZone(_map.BWMap, player.HitBoundingBox))
+                if (zone.IsInZone((Map)_map.TMMap, player.HitBoundingBox))
                 {
                     arr ??= new ScriptArrayPlayer();
                     arr.Add(runtime, player);
@@ -429,7 +442,7 @@ namespace DaveTheMonitor.Core
 
             foreach (ICorePlayer player in ActorManager.Players)
             {
-                if (zone.IsInZone(_map.BWMap, player.HitBoundingBox))
+                if (zone.IsInZone((Map)_map.TMMap, player.HitBoundingBox))
                 {
                     count++;
                 }
@@ -525,7 +538,7 @@ namespace DaveTheMonitor.Core
             collection.Clear();
             foreach (Zone zone in Zones)
             {
-                if (zone.IsInZone(_map.BWMap, p))
+                if (zone.IsInZone((Map)_map.TMMap, p))
                 {
                     collection.Add(zone);
                 }
@@ -560,6 +573,127 @@ namespace DaveTheMonitor.Core
         public void RunSingleScriptCommand(string command, ICoreActor actor)
         {
             Game.TMGame.RunSingleScriptCommand(command, actor.TMActor);
+        }
+
+        public void OnEnter(ICoreActor actor)
+        {
+            if (actor is not ICorePlayer player || !player.IsLocalPlayer)
+            {
+                return;
+            }
+
+            if (!_hasChunkLoader)
+            {
+                _chunkLoader = new ChunkLoader();
+                _chunkLoader.Initialize(Game, Map, player, true);
+                _chunkLoaderPriority = new ChunkLoaderPriority(Game, Map);
+                _hasChunkLoader = true;
+            }
+
+            CancelAllRelatedThreadWorkers();
+
+            Traverse tgame = new Traverse(Game.TMGame);
+            tgame.Field("chunkLoader").SetValue(_chunkLoader.ChunkLoaderObject);
+            tgame.Field("chunkLoaderPriority").SetValue(_chunkLoaderPriority.ChunkLoaderPriorityObject);
+            tgame.Field("map").SetValue(Map.TMMap);
+            tgame.Property("CreativeModeHelper").SetValue(new CreativeModeHelper(Game, Map).CreativeModeHelperObject);
+            tgame.Field("ParticleModifiers").SetValue(new ParticleModifiers(Game, Map).ParticleModifiersObject);
+
+            ParticleManager particleManager = new ParticleManager(Game, Map);
+            particleManager.ParticleManagerObject.Initialize(null);
+            particleManager.ParticleManagerObject.LoadContent(null);
+            tgame.Field("particleManager").SetValue(particleManager.ParticleManagerObject);
+
+            EmitterParticleSystem emitterSystem = new EmitterParticleSystem();
+            emitterSystem.Initialize(Map);
+            emitterSystem.LoadContent();
+            tgame.Field("EmitterParticleSystem").SetValue(emitterSystem.EmitterParticleSystemObject);
+
+            SetAsDrawnWorld();
+
+            Traverse tplayer = new Traverse(player.TMPlayer);
+            tplayer.Field("map").SetValue(Map.TMMap);
+            tplayer.Field("LeftHand").Field("map").SetValue(Map.TMMap);
+            tplayer.Field("RightHand").Field("map").SetValue(Map.TMMap);
+
+            ThreadQueueManager.Instance.QueueWorkItem(_chunkLoader.ChunkLoaderObject, false, PriorityLevel.Normal);
+            ThreadQueueManager.Instance.QueueWorkItem(_chunkLoaderPriority.ChunkLoaderPriorityObject, false, PriorityLevel.Priority);
+            ThreadQueueManager.Instance.QueueWorkItem(new FireUpdateWorker(Game, PriorityLevel.Normal).FireUpdateWorkerObject, false, PriorityLevel.Normal);
+            ThreadQueueManager.Instance.QueueWorkItem(new NpcSpawnWorker(Game, PriorityLevel.Priority).NpcSpawnWorkerObject, false, PriorityLevel.Priority);
+            ThreadQueueManager.Instance.QueueWorkItem(new PlayerSurroundings(Game, PriorityLevel.Priority).PlayerSurroundingsObject, false, PriorityLevel.Priority);
+            ParticleEmitterWorker particleWorker = new ParticleEmitterWorker(Game, PriorityLevel.Normal);
+            ThreadQueueManager.Instance.QueueWorkItem(particleWorker.ParticleEmitterWorkerObject, false, PriorityLevel.Normal);
+            tgame.Field("particleEmitterWorker").SetValue(particleWorker.ParticleEmitterWorkerObject);
+        }
+
+        public void SetAsDrawnWorld()
+        {
+            Traverse tgame = new Traverse(Game.TMGame);
+            DrawableGameObjectBase oldRenderer = tgame.Field("MapRenderer").GetValue<DrawableGameObjectBase>();
+            oldRenderer.IsEnabled = false;
+
+            if (!_hasRenderer)
+            {
+                _renderer = new MapRenderer(Game, null);
+                _renderer.Map = Map.TMMap;
+                _renderer.MapRendererObject.Initialize(null);
+                _renderer.MapRendererObject.LoadContent(null);
+                _hasRenderer = true;
+            }
+
+            _renderer.MapRendererObject.IsEnabled = true;
+            tgame.Field("MapRenderer").SetValue(_renderer.MapRendererObject);
+            DrawGlobals.WorldDrawOptions = DrawOptions;
+        }
+
+        public void Draw(ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options)
+        {
+            if (!_hasRenderer)
+            {
+                _renderer = new MapRenderer(Game, null);
+                _renderer.Map = Map.TMMap;
+                _renderer.MapRendererObject.Initialize(null);
+                _renderer.MapRendererObject.LoadContent(null);
+                _hasRenderer = true;
+            }
+
+            CoreGlobals.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            CoreGlobals.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            WorldDrawOptions originalOptions = DrawGlobals.WorldDrawOptions;
+            DrawGlobals.WorldDrawOptions = options;
+            _renderer.Draw(player, virtualPlayer);
+            DrawGlobals.WorldDrawOptions = originalOptions;
+        }
+
+        private void CancelAllRelatedThreadWorkers()
+        {
+            IThreadWorkItem[] items = ThreadQueueManager.Instance.PriorityWorkItems;
+            foreach (IThreadWorkItem item in items)
+            {
+                if (ShouldCancel(item))
+                {
+                    ThreadQueueManager.Instance.CancelQueueItem(item, PriorityLevel.Priority);
+                }
+            }
+
+            items = ThreadQueueManager.Instance.MainWorkItems;
+            foreach (IThreadWorkItem item in items)
+            {
+                if (ShouldCancel(item))
+                {
+                    ThreadQueueManager.Instance.CancelQueueItem(item, PriorityLevel.Normal);
+                }
+            }
+        }
+
+        private bool ShouldCancel(IThreadWorkItem item)
+        {
+            Type type = item.GetType();
+            return type == ChunkLoader.Type
+                || type == ChunkLoaderPriority.Type
+                || type == FireUpdateWorker.Type
+                || type == NpcSpawnWorker.Type
+                || type == PlayerSurroundings.Type;
         }
 
         public void SetPower(GlobalPoint3D p, bool power, ICorePlayer player)
@@ -666,12 +800,13 @@ namespace DaveTheMonitor.Core
             return _data.ShouldSaveState();
         }
 
-        internal CoreWorld(ICoreGame game, string id)
+        internal CoreWorld(ICoreGame game, string id, int numId, ICoreMap map)
         {
             Game = game;
-            _actorManager = new ActorManager(game, this, game.TMGame.World.NpcManager);
-            _map = new CoreMap(TMWorld.Map);
             Id = id;
+            NumId = numId;
+            _actorManager = new ActorManager(game, this, game.TMGame.World.NpcManager);
+            _map = map;
             string path = TMWorld.WorldPath;
             if (Utils.StartsWithDriveLetter(path))
             {
@@ -682,6 +817,7 @@ namespace DaveTheMonitor.Core
                 FullPath = Path.Combine(FileSystem.RootPath, path);
             }
             _data = new CoreDataCollection<ICoreWorld>(this);
+            DrawOptions = WorldDrawOptions.All;
         }
     }
 }

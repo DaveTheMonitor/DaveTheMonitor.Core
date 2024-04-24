@@ -19,6 +19,7 @@ using StudioForge.TotalMiner.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace DaveTheMonitor.Core
 {
@@ -45,6 +46,7 @@ namespace DaveTheMonitor.Core
         private Dictionary<ulong, byte[]> _playerSaveData;
         private int _playerSaveStateTmVersion;
         private int _playerSaveStateCoreVersion;
+        private bool _worldsInitialized;
 
         static CoreGame()
         {
@@ -110,6 +112,122 @@ namespace DaveTheMonitor.Core
             return ModManager.Call(modId, args);
         }
 
+        void ICoreGame.RegisterWorld(string id)
+        {
+            CreateWorld(id);
+        }
+
+        public void InitializeAllWorlds()
+        {
+            if (!_worldsInitialized)
+            {
+                foreach (ICoreWorld world in _worlds)
+                {
+                    InitializeWorld(world);
+                }
+                _worldsInitialized = true;
+            }
+        }
+
+        private void InitializeWorld(ICoreWorld world)
+        {
+            foreach (ICoreMod mod in ModManager.GetAllActivePlugins())
+            {
+                mod.Plugin.InitializeWorld(world);
+            }
+        }
+
+        private void CreateWorld(string id)
+        {
+            SaveMapHead header = TMGame.World.Header;
+            Map currentMap = (Map)TMGame.World.Map;
+            ConstructorInfo ctor = AccessTools.Constructor(AccessTools.TypeByName("StudioForge.TotalMiner.MapStrategyTM"), new Type[] { TMGame.GetType() });
+            MapStrategy strategy = (MapStrategy)ctor.Invoke(new object[] { TMGame });
+
+            MapOptions options = new MapOptions()
+            {
+                TileSize = 1,
+                RegionSize = header.RegionSize,
+                ChunkSize = header.ChunkSize,
+                MapSize = header.MaxMapSize,
+                SeaLevel = currentMap.SeaLevel,
+                MapStrategy = strategy,
+                AllowMeshCreatorToSplitOrFade = true,
+            };
+            CreateWorld(id, options);
+        }
+
+        private void CreateWorld(string id, MapOptions options)
+        {
+            Type[] types = new Type[]
+            {
+                TMGame.GetType(),
+                typeof(string), //name
+                typeof(float), //tileSize
+                typeof(Point3D), //MaxMapSize
+                typeof(BoxInt), //mapBound
+                typeof(Point3D), //regionSize
+                typeof(Point3D), //chunkSize
+                typeof(BlockDataXML[]), // blockData
+                typeof(int), //maxLight
+                typeof(int), //seed
+                typeof(ushort), //initialCacheCount
+                typeof(int), //cacheExpandSize
+                typeof(MapStrategy), //strategy
+                typeof(bool), //isHost
+                typeof(bool), //allowMeshCreatorToSplitOrFade
+            };
+            object[] param = new object[]
+            {
+                TMGame,
+                id,
+                options.TileSize,
+                options.MapSize,
+                new BoxInt()
+                {
+                    Min = new GlobalPoint3D(-options.MapSize.X / 2, 0, -options.MapSize.Z / 2),
+                    Max = new GlobalPoint3D(options.MapSize.X / 2, options.MapSize.Y, options.MapSize.Z / 2)
+                },
+                options.RegionSize,
+                options.ChunkSize,
+                Globals1.BlockData,
+                15,
+                ((Map)TMGame.World.Map).Seed,
+                (ushort)4,
+                128,
+                options.MapStrategy,
+                ((Map)TMGame.World.Map).IsHost,
+                options.AllowMeshCreatorToSplitOrFade
+            };
+
+            Map map = (Map)AccessTools.Constructor(AccessTools.TypeByName("StudioForge.TotalMiner.MapTM"), types).Invoke(param);
+            map.SeaLevel = options.SeaLevel;
+            map.OutOfBoundsBlockID = (byte)Block.zLastBlockID;
+            map.WaterBlockID = (byte)Block.Water;
+            map.LavaBlockID = (byte)Block.Lava;
+            map.RopeBlockID = (byte)Block.Rope;
+            map.BedrockID = (byte)Block.Bedrock;
+            map.InvisibleBarrierID = (byte)Block.InvisibleBarrier;
+            map.PregenerateRegions(false, true, null);
+            CreateWorld(id, new CoreMap((ITMMap)map));
+        }
+
+        private void CreateWorld(string id, ICoreMap map)
+        {
+            int index = _worlds.Length;
+            Array.Resize(ref _worlds, _worlds.Length + 1);
+            ICoreWorld world = new CoreWorld(this, id, index, map);
+            _worlds[index] = world;
+
+            // We test if worlds have been initialized here so we don't
+            // call ICorePlugin.InitializeWorld until Initialize and
+            // InitializeGame has been called for all plugins.
+            if (_worldsInitialized)
+            {
+                InitializeWorld(world);
+            }
+        }
+
         public IEnumerable<ICoreWorld> GetAllWorlds()
         {
             return _worlds;
@@ -117,17 +235,38 @@ namespace DaveTheMonitor.Core
 
         public ICoreWorld GetWorld(string id)
         {
-            return _currentWorld.Id == id ? _currentWorld : null;
+            foreach (ICoreWorld world in _worlds)
+            {
+                if (world.Id == id)
+                {
+                    return world;
+                }
+            }
+            return null;
         }
 
         public ICoreWorld GetWorld(ICoreMap map)
         {
-            return _currentWorld.Map == map ? _currentWorld : null;
+            foreach (ICoreWorld world in _worlds)
+            {
+                if (world.Map == map)
+                {
+                    return world;
+                }
+            }
+            return null;
         }
 
         public ICoreWorld GetWorld(Map map)
         {
-            return _currentWorld.Map.TMMap == map ? _currentWorld : null;
+            foreach (ICoreWorld world in _worlds)
+            {
+                if (world.Map.TMMap == map)
+                {
+                    return world;
+                }
+            }
+            return null;
         }
 
         public ICorePlayer GetPlayer(ITMPlayer player)
@@ -387,7 +526,8 @@ namespace DaveTheMonitor.Core
         internal CoreGame(ITMGame game)
         {
             TMGame = game;
-            _currentWorld = new CoreWorld(this, "Core.Overworld");
+            _currentWorld = new CoreWorld(this, "Core.Overworld", 0, new CoreMap(TMGame.World.Map));
+            _worldsInitialized = false;
             _worlds = new ICoreWorld[1] { _currentWorld };
             _data = new CoreDataCollection<ICoreGame>(this);
             MapComponentLoader = new MapComponentLoader(this);

@@ -301,6 +301,22 @@ namespace DaveTheMonitor.Core
             }
         }
 
+        public void ModPreDrawWorldMap(ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options)
+        {
+            foreach (ICoreMod mod in _activePlugins)
+            {
+                mod.Plugin.PreDrawWorldMap(map, player, virtualPlayer, options);
+            }
+        }
+
+        public void ModPostDrawWorldMap(ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options)
+        {
+            foreach (ICoreMod mod in _activePlugins)
+            {
+                mod.Plugin.PostDrawWorldMap(map, player, virtualPlayer, options);
+            }
+        }
+
         public ModManager(IMapComponentLoader componentLoader)
         {
             _activeMods = new List<ICoreMod>();

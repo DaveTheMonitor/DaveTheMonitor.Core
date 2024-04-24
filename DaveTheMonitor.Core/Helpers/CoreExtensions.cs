@@ -32,6 +32,12 @@ namespace DaveTheMonitor.Core.Helpers
         private static AccessTools.FieldRef<object, float> _farClip =
             AccessTools.FieldRefAccess<object, float>(AccessTools.Field("StudioForge.TotalMiner.Actor:farClip"));
 
+        private static AccessTools.FieldRef<object, Matrix> _viewMatrix =
+            AccessTools.FieldRefAccess<object, Matrix>(AccessTools.Field("StudioForge.TotalMiner.Actor:ViewMatrix"));
+
+        private static AccessTools.FieldRef<object, Matrix> _viewMatrixLocal =
+            AccessTools.FieldRefAccess<object, Matrix>(AccessTools.Field("StudioForge.TotalMiner.Actor:ViewMatrixLocal"));
+
         #endregion
 
         #region Player
@@ -51,6 +57,10 @@ namespace DaveTheMonitor.Core.Helpers
         /// <param name="actor">The actor.</param>
         /// <returns>The <see cref="ICoreActor"/> instance for the specified <see cref="ITMActor"/>.</returns>
         public static ICoreActor GetCoreActor(this ITMActor actor) => CoreGame.GetActor(actor);
+
+        public static void SetViewMatrix(this ITMActor actor, Matrix viewMatrix) => _viewMatrix(actor) = viewMatrix;
+
+        public static void SetViewMatrixLocal(this ITMActor actor, Matrix viewMatrixLocal) => _viewMatrixLocal(actor) = viewMatrixLocal;
 
         #endregion
 

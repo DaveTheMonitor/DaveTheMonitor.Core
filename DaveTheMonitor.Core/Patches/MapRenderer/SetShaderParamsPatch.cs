@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace DaveTheMonitor.Core.Patches
+namespace DaveTheMonitor.Core.Patches.MapRenderer
 {
     [Patch("StudioForge.TotalMiner.Renderers.MapRenderer", "SetShaderParams")]
     public static class SetShaderParamsPatch

@@ -92,6 +92,33 @@ namespace DaveTheMonitor.Core
             _getHudPosInvoker = AccessTools.Method(graphicStatics, "HUDPos", new Type[] { player }).CreateInvoker<GetHudPosInvoker>();
         }
 
+        public override void EnterWorld(ICoreWorld world, Vector3 position)
+        {
+            if (World == world || world == null)
+            {
+                return;
+            }
+
+            world.OnEnter(this);
+            World = world;
+            Position = position;
+            UpdateMatrices();
+        }
+
+        public override void EnterWorld(ICoreWorld world, Vector3 position, Vector3 viewDirection)
+        {
+            if (World == world || world == null)
+            {
+                return;
+            }
+
+            world.OnEnter(this);
+            World = world;
+            Position = position;
+            ViewDirection = viewDirection;
+            UpdateMatrices();
+        }
+
         public void ReadState(BinaryReader reader, int tmVersion, int coreVersion)
         {
             string world = reader.ReadString();

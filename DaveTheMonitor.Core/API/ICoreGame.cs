@@ -160,6 +160,12 @@ namespace DaveTheMonitor.Core.API
         object ModCall(string modId, params object[] args);
 
         /// <summary>
+        /// Registers a new world with the specified string ID. <see cref="ICorePlugin.InitializeWorld(ICoreWorld)"/> will be called for this new world.
+        /// </summary>
+        /// <param name="id">The ID of the world to add.</param>
+        void RegisterWorld(string id);
+
+        /// <summary>
         /// Gets am <see cref="IEnumerable{T}"/> of all worlds.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of all worlds.</returns>

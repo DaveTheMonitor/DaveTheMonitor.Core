@@ -49,6 +49,16 @@ namespace DaveTheMonitor.Core.API
         string Id { get; }
 
         /// <summary>
+        /// The numeric ID of this world.
+        /// </summary>
+        int NumId { get; }
+
+        /// <summary>
+        /// World draw options used when this world is the drawn world.
+        /// </summary>
+        WorldDrawOptions DrawOptions { get; set; }
+
+        /// <summary>
         /// The <see cref="ICoreActorManager"/> of this world.
         /// </summary>
         ICoreActorManager ActorManager { get; }
@@ -343,6 +353,25 @@ namespace DaveTheMonitor.Core.API
         /// <param name="command">The script command to run.</param>
         /// <param name="actor">The actor to execute the script command on.</param>
         void RunSingleScriptCommand(string command, ICoreActor actor);
+
+        /// <summary>
+        /// Called when an actor enters this world.
+        /// </summary>
+        /// <param name="actor">The actor that entered this world.</param>
+        void OnEnter(ICoreActor actor);
+
+        /// <summary>
+        /// Sets this world as the world that will be drawn each frame. This allows the active world and the drawn world to be different.
+        /// </summary>
+        void SetAsDrawnWorld();
+
+        /// <summary>
+        /// Draws this world using the specified options.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        /// <param name="virtualPlayer">The virtual player.</param>
+        /// <param name="options">Options for drawing. Used to control which elements of the world are drawn (eg. only chunks, only entities)</param>
+        void Draw(ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options);
 
         /// <summary>
         /// Spawns a particle with the specified ID at the specified position.

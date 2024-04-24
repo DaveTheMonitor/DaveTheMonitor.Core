@@ -203,5 +203,47 @@ namespace DaveTheMonitor.Core
                 log.WriteLine($"{e.Code} : {e.Header} : {e.Message}");
             }
         }
+
+        [ConsoleCommand("enterworld", "Enters the specified world.", "Forces the player to enter the specified world.", "world")]
+        [ConsoleCommandArg(nameof(id), "id", "The ID of the world to enter.", true, "i")]
+        public static void EnterWorld(ICorePlayer player, IOutputLog log, string id)
+        {
+            ICoreGame game = player.Game;
+            ICoreWorld world = game.GetWorld(id);
+            if (world == null)
+            {
+                log.WriteLine($"World {id} does not exist.");
+                return;
+            }
+
+            if (player.World == world)
+            {
+                log.WriteLine($"The player is already in {id}.");
+                return;
+            }
+
+            player.EnterWorld(world, player.Position);
+        }
+
+        [ConsoleCommand("drawworld", "Sets the specified world as the drawn world.", "Sets the specified world as the drawn world.", "dworld")]
+        [ConsoleCommandArg(nameof(id), "id", "The ID of the world to draw.", true, "i")]
+        public static void DrawWorld(ICorePlayer player, IOutputLog log, string id)
+        {
+            ICoreGame game = player.Game;
+            ICoreWorld world = game.GetWorld(id);
+            if (world == null)
+            {
+                log.WriteLine($"World {id} does not exist.");
+                return;
+            }
+
+            if (player.World == world)
+            {
+                log.WriteLine($"The player is already in {id}.");
+                return;
+            }
+
+            world.SetAsDrawnWorld();
+        }
     }
 }

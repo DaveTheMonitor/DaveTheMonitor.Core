@@ -20,7 +20,7 @@ namespace DaveTheMonitor.Core
     {
         public ITMActor TMActor { get; private set; }
         public ICoreGame Game { get; private set; }
-        public ICoreWorld World { get; private set; }
+        public ICoreWorld World { get; protected set; }
         public Hand LeftHand { get; private set; }
         public Hand RightHand { get; private set; }
         public virtual CoreActor CoreActor => Game.ActorRegistry.GetActor(TMActor.ActorType);
@@ -242,9 +242,21 @@ namespace DaveTheMonitor.Core
         public Vector3 Velocity { get => TMActor.Velocity; set => TMActor.Velocity = value; }
         public Vector2 MaxVelocity { get => TMActor.MaxVelocity; set => TMActor.MaxVelocity = value; }
         public Vector3 ViewDirection { get => TMActor.ViewDirection; set => TMActor.ViewDirection = value; }
-        public Matrix ViewMatrix => TMActor.ViewMatrix;
-        public Matrix ViewMatrixLocal => TMActor.ViewMatrixLocal;
-        public Matrix ProjectionMatrix { get => TMActor.ProjectionMatrix; set => TMActor.ProjectionMatrix = value; }
+        public Matrix ViewMatrix
+        {
+            get => TMActor.ViewMatrix;
+            set => TMActor.SetViewMatrix(value);
+        }
+        public Matrix ViewMatrixLocal
+        {
+            get => TMActor.ViewMatrixLocal;
+            set => TMActor.SetViewMatrixLocal(value);
+        }
+        public Matrix ProjectionMatrix
+        {
+            get => TMActor.ProjectionMatrix;
+            set => TMActor.ProjectionMatrix = value;
+        }
         public BoundingFrustum Frustum => TMActor.Frustum;
         public BoundingBox HitBoundingBox => TMActor.Box;
         public float SpeedOverride { get => TMActor.SpeedOverride; set => TMActor.SpeedOverride = value; }
@@ -359,6 +371,22 @@ namespace DaveTheMonitor.Core
                 }
             }
         }
+
+        public void EnterWorld(string id, Vector3 position)
+        {
+            ICoreWorld world = Game.GetWorld(id);
+            EnterWorld(world, position);
+        }
+
+        public void EnterWorld(string id, Vector3 position, Vector3 viewDirection)
+        {
+            ICoreWorld world = Game.GetWorld(id);
+            EnterWorld(world, position, viewDirection);
+        }
+
+        public abstract void EnterWorld(ICoreWorld world, Vector3 position);
+
+        public abstract void EnterWorld(ICoreWorld world, Vector3 position, Vector3 viewDirection);
 
         public void Kill()
         {

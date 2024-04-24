@@ -88,12 +88,12 @@ namespace DaveTheMonitor.Core.API
         /// <summary>
         /// This actor's view matrix, used for world space rendering.
         /// </summary>
-        Matrix ViewMatrix { get; }
+        Matrix ViewMatrix { get; set; }
 
         /// <summary>
         /// This actor's local view matrix, used for local space rendering.
         /// </summary>
-        Matrix ViewMatrixLocal { get; }
+        Matrix ViewMatrixLocal { get; set; }
 
         /// <summary>
         /// This actor's projection matrix.
@@ -425,6 +425,48 @@ namespace DaveTheMonitor.Core.API
         /// <param name="amount">The amount of health to add or remove.</param>
         /// <param name="triggerEvents">True if hurt and heal events should trigger.</param>
         void ChangeHealth(float amount, bool triggerEvents);
+
+        /// <summary>
+        /// Forces this actor to enter the world with the specified ID, if it exists.
+        /// </summary>
+        /// <remarks>
+        /// If this actor is the local player, the specified world is also set as the active and drawn world.
+        /// </remarks>
+        /// <param name="id">The ID of the world to enter.</param>
+        /// <param name="position">The position in the world the player should enter at.</param>
+        void EnterWorld(string id, Vector3 position);
+
+        /// <summary>
+        /// Forces this actor to enter the world with the specified ID, if it exists.
+        /// </summary>
+        /// <remarks>
+        /// If this actor is the local player, the specified world is also set as the active and drawn world.
+        /// </remarks>
+        /// <param name="id">The ID of the world to enter.</param>
+        /// <param name="position">The position in the world the player should enter at.</param>
+        /// <param name="viewDirection">The direction the player should be facing when they enter the world.</param>
+        void EnterWorld(string id, Vector3 position, Vector3 viewDirection);
+
+        /// <summary>
+        /// Forces this actor to enter the specified world.
+        /// </summary>
+        /// <remarks>
+        /// If this actor is the local player, the specified world is also set as the active and drawn world.
+        /// </remarks>
+        /// <param name="world">The world to enter.</param>
+        /// <param name="position">The position in the world the player should enter at.</param>
+        void EnterWorld(ICoreWorld world, Vector3 position);
+
+        /// <summary>
+        /// Forces this actor to enter the specified world.
+        /// </summary>
+        /// <remarks>
+        /// If this actor is the local player, the specified world is also set as the active and drawn world.
+        /// </remarks>
+        /// <param name="world">The world to enter.</param>
+        /// <param name="position">The position in the world the player should enter at.</param>
+        /// <param name="viewDirection">The direction the player should be facing when they enter the world.</param>
+        void EnterWorld(ICoreWorld world, Vector3 position, Vector3 viewDirection);
 
         /// <summary>
         /// Kills this actor.
