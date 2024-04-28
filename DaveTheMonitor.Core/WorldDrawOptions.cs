@@ -18,102 +18,107 @@ namespace DaveTheMonitor.Core
         None = 0,
 
         /// <summary>
-        /// Draw the sky curtain, stars, and sun and moon.
+        /// Draw the sky curtain and stars.
         /// </summary>
         Background = 1,
 
         /// <summary>
+        /// Draw the sun and moon.
+        /// </summary>
+        SunAndMoon = 2,
+
+        /// <summary>
         /// Draw the items in the player's hand.
         /// </summary>
-        PlayerItems = 2,
+        PlayerItems = 4,
 
         /// <summary>
         /// Draw chunks in the world.
         /// </summary>
-        Chunks = 4,
+        Chunks = 8,
 
         /// <summary>
         /// Draw sign text.
         /// </summary>
-        Signs = 8,
+        Signs = 16,
 
         /// <summary>
         /// Draw arcade games.
         /// </summary>
-        Arcade = 16,
+        Arcade = 32,
 
         /// <summary>
-        /// Draw splinters (block breaking animations)
+        /// Draw splinters (block breaking animations).
         /// </summary>
-        Splinters = 32,
+        Splinters = 64,
 
         /// <summary>
         /// Draw particles.
         /// </summary>
-        Particles = 64,
+        Particles = 128,
 
         /// <summary>
         /// Draw avatars (players and NPCs).
         /// </summary>
-        Avatars = 128,
+        Avatars = 256,
 
         /// <summary>
         /// Draw entities.
         /// </summary>
-        Entities = 256,
+        Entities = 512,
         
         /// <summary>
         /// Draw the player's current clipboard.
         /// </summary>
-        Clipboard = 512,
+        Clipboard = 1024,
 
         /// <summary>
         /// Draw the swing target outline.
         /// </summary>
-        SwingTarget = 1024,
+        SwingTarget = 2048,
 
         /// <summary>
         /// Draw nameplates.
         /// </summary>
-        NamePlates = 2048,
+        NamePlates = 4096,
 
         /// <summary>
         /// Draw water and other transparent blocks.
         /// </summary>
-        TransparentBlocks = 4096,
+        TransparentBlocks = 8192,
 
         /// <summary>
-        /// Draw zone outlines (if enabled)
+        /// Draw zone outlines (if enabled).
         /// </summary>
-        Zones = 8192,
+        Zones = 16384,
 
         /// <summary>
         /// Draw area indicators (if enabled).
         /// </summary>
-        AreaIndicators = 16384,
+        AreaIndicators = 32768,
 
         /// <summary>
-        /// Draw script tools.
+        /// Draw script tools (script ray, sphere, etc.).
         /// </summary>
-        ScriptTools = 32768,
+        ScriptTools = 65536,
 
         /// <summary>
         /// Draw actor bounds and frustums (if enabled).
         /// </summary>
-        Bounds = 65536,
+        Bounds = 131072,
 
         /// <summary>
         /// Draw clouds.
         /// </summary>
-        Clouds = 131072,
+        Clouds = 262144,
 
         /// <summary>
         /// Draw all elements.
         /// </summary>
-        All = Background | PlayerItems | Chunks | Signs | Arcade | Splinters | Particles | Avatars | Entities | Clipboard | SwingTarget | NamePlates | TransparentBlocks | Zones | AreaIndicators | ScriptTools | Bounds | Clouds,
+        All = Background | SunAndMoon | PlayerItems | Chunks | Signs | Arcade | Splinters | Particles | Avatars | Entities | Clipboard | SwingTarget | NamePlates | TransparentBlocks | Zones | AreaIndicators | ScriptTools | Bounds | Clouds,
 
         /// <summary>
-        /// Draw all elements except the background.
+        /// Draw all elements except the background and sun and moon.
         /// </summary>
         AllNoBackground = PlayerItems | Chunks | Signs | Arcade | Splinters | Particles | Avatars | Entities | Clipboard | SwingTarget | NamePlates | TransparentBlocks | Zones | AreaIndicators | ScriptTools | Bounds | Clouds
     }

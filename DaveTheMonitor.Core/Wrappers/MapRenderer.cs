@@ -21,14 +21,15 @@ namespace DaveTheMonitor.Core.Wrappers
         private static Action<object, ITMPlayer, ITMPlayer> _draw;
         private static Action<object, ITMPlayer, ITMPlayer> _setShaderParams;
         private static Action<object, ITMPlayer, ITMPlayer> _drawMapChunks;
-        private static AccessTools.FieldRef<object, object> _fieldRef;
+        private static AccessTools.FieldRef<object, object> _mapField;
         private static ConstructorInfo _ctor;
 
         public DrawableGameObjectBase MapRendererObject { get; private set; }
+
         public ITMMap Map
         {
-            get => (ITMMap)_fieldRef.Invoke(MapRendererObject);
-            set => _fieldRef.Invoke(MapRendererObject) = value;
+            get => (ITMMap)_mapField.Invoke(MapRendererObject);
+            set => _mapField.Invoke(MapRendererObject) = value;
         }
 
         static MapRenderer()
@@ -51,22 +52,12 @@ namespace DaveTheMonitor.Core.Wrappers
                 player,
                 player
             }).CreateInvoker<Action<object, ITMPlayer, ITMPlayer>>();
-            _fieldRef = AccessTools.FieldRefAccess<object>(Type, "map");
+            _mapField = AccessTools.FieldRefAccess<object>(Type, "map");
         }
 
         public void Draw(ICorePlayer player, ITMPlayer virtualPlayer)
         {
             _draw(MapRendererObject, player.TMPlayer, virtualPlayer);
-        }
-
-        public void SetShaderParams(ICorePlayer player, ITMPlayer virtualPlayer)
-        {
-            _setShaderParams(MapRendererObject, player.TMPlayer, virtualPlayer);
-        }
-
-        public void DrawMapChunks(ICorePlayer player, ITMPlayer virtualPlayer)
-        {
-            _drawMapChunks(MapRendererObject, player.TMPlayer, virtualPlayer);
         }
 
         public MapRenderer(ICoreGame game, IProgressBar progressBar)

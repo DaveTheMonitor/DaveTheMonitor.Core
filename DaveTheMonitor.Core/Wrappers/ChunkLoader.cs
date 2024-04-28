@@ -17,13 +17,19 @@ namespace DaveTheMonitor.Core.Wrappers
     {
         public static Type Type { get; private set; }
         private static Action<object, object, ITMMap, ITMPlayer, bool> _initialize;
+        private static AccessTools.FieldRef<object, ITMGame> _instance;
+        private static AccessTools.FieldRef<object, ITMMap> _map;
 
         public IThreadWorkItem ChunkLoaderObject { get; private set; }
+        public ITMGame Instance => _instance(ChunkLoaderObject);
+        public ITMMap Map => _map(ChunkLoaderObject);
 
         static ChunkLoader()
         {
             Type = AccessTools.TypeByName("StudioForge.TotalMiner.ChunkLoader");
             _initialize = AccessTools.Method(Type, "Initialize").CreateInvoker<Action<object, object, ITMMap, ITMPlayer, bool>>();
+            _instance = AccessTools.FieldRefAccess<ITMGame>(Type, "instance");
+            _map = AccessTools.FieldRefAccess<ITMMap>(Type, "map");
         }
 
         public void Initialize(ICoreGame instance, ICoreMap map, ICorePlayer player, bool isThreaded)

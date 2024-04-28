@@ -101,30 +101,6 @@ namespace DaveTheMonitor.Core.API
         }
 
         /// <summary>
-        /// Called immediately before MapRenderer.Draw. Can be used for more advanced rendering, but most plugins won't need it.
-        /// </summary>
-        /// <param name="map">The map being drawn.</param>
-        /// <param name="player">The player.</param>
-        /// <param name="virtualPlayer">The virtual player.</param>
-        /// <param name="options">The draw options.</param>
-        void PreDrawWorldMap(ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options)
-        {
-
-        }
-
-        /// <summary>
-        /// Called immediately after MapRenderer.Draw. Can be used for more advanced rendering, but most plugins won't need it.
-        /// </summary>
-        /// <param name="map">The map that was drawn.</param>
-        /// <param name="player">The player.</param>
-        /// <param name="virtualPlayer">The virtual player.</param>
-        /// <param name="options">The draw options.</param>
-        void PostDrawWorldMap(ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options)
-        {
-
-        }
-
-        /// <summary>
         /// Called by other mods for cross-mod communication.
         /// </summary>
         /// <param name="args">The arguments passed by the mod.</param>

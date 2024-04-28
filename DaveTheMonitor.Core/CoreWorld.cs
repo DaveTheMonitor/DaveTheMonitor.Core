@@ -13,19 +13,23 @@ using Microsoft.Xna.Framework.Graphics;
 using StudioForge.BlockWorld;
 using StudioForge.Engine;
 using StudioForge.Engine.Core;
+using StudioForge.Engine.Integration;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
 using StudioForge.TotalMiner.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
 namespace DaveTheMonitor.Core
 {
+    [DebuggerDisplay("Id = {Id}")]
     internal sealed class CoreWorld : ICoreWorld
     {
         public ITMWorld TMWorld => Game.TMGame.World;
+        public WorldOptions WorldOptions { get; private set; }
         public ICoreGame Game { get; private set; }
         public string Id { get; private set; }
         public int NumId { get; private set; }
@@ -47,13 +51,16 @@ namespace DaveTheMonitor.Core
         public ICoreMap Map => _map;
         public SaveMapHead Header => TMWorld.Header;
         public string FullPath { get; private set; }
-        public BiomeType CurrentBiome => TMWorld.CurrentBiome;
+        public BiomeType CurrentBiome => WorldOptions.Biome.Value;
         public IEnumerable<MapMarker> MapMarkers => TMWorld.MapMarkers;
         public IEnumerable<MapMarker> GraveMarkers => TMWorld.GraveMarkers;
         public History History => TMWorld.History;
         public IEnumerable<Zone> Zones => TMWorld.Zones;
         public Vector3 WindVelocity => Game.TMGame.GetWindVelocity();
         public float WindFactor => Game.TMGame.GetWindFactor();
+        public MapRenderer? Renderer => _hasRenderer ? _renderer : null;
+        public SkyCurtain SkyCurtain => _skyCurtain;
+        public Starfield Starfield => _starfield;
         public event ComponentEventHandler ComponentPasted;
         private ActorManager _actorManager;
         private ICoreMap _map;
@@ -63,6 +70,8 @@ namespace DaveTheMonitor.Core
         private ChunkLoader _chunkLoader;
         private ChunkLoaderPriority _chunkLoaderPriority;
         private MapRenderer _renderer;
+        private SkyCurtain _skyCurtain;
+        private Starfield _starfield;
 
         #region Scripts
 
@@ -602,6 +611,7 @@ namespace DaveTheMonitor.Core
             ParticleManager particleManager = new ParticleManager(Game, Map);
             particleManager.ParticleManagerObject.Initialize(null);
             particleManager.ParticleManagerObject.LoadContent(null);
+            tgame.Field("particleManager").GetValue<GameObjectBase>().UnloadContent();
             tgame.Field("particleManager").SetValue(particleManager.ParticleManagerObject);
 
             EmitterParticleSystem emitterSystem = new EmitterParticleSystem();
@@ -643,6 +653,9 @@ namespace DaveTheMonitor.Core
 
             _renderer.MapRendererObject.IsEnabled = true;
             tgame.Field("MapRenderer").SetValue(_renderer.MapRendererObject);
+
+            tgame.Field("skyCurtain").SetValue(_skyCurtain.SkyCurtainObject);
+            tgame.Field("starMap").SetValue(_starfield.StarfieldObject);
             DrawGlobals.WorldDrawOptions = DrawOptions;
         }
 
@@ -661,7 +674,16 @@ namespace DaveTheMonitor.Core
             CoreGlobals.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             WorldDrawOptions originalOptions = DrawGlobals.WorldDrawOptions;
             DrawGlobals.WorldDrawOptions = options;
+            Traverse tgame = new Traverse(Game.TMGame);
+            object oldSkyCurtain = tgame.Field("skyCurtain").GetValue();
+            object oldStarfield = tgame.Field("starMap").GetValue();
+
+            tgame.Field("skyCurtain").SetValue(_skyCurtain.SkyCurtainObject);
+            tgame.Field("starMap").SetValue(_starfield.StarfieldObject);
             _renderer.Draw(player, virtualPlayer);
+            tgame.Field("skyCurtain").SetValue(oldSkyCurtain);
+            tgame.Field("starMap").SetValue(oldStarfield);
+
             DrawGlobals.WorldDrawOptions = originalOptions;
         }
 
@@ -800,11 +822,21 @@ namespace DaveTheMonitor.Core
             return _data.ShouldSaveState();
         }
 
-        internal CoreWorld(ICoreGame game, string id, int numId, ICoreMap map)
+        public void LoadContent()
+        {
+            _skyCurtain = new SkyCurtain(Game);
+            _skyCurtain.Map = (Map)Map.TMMap;
+            _skyCurtain.SkyCurtainObject.LoadContent(null);
+            _starfield = new Starfield(Game);
+            _starfield.StarfieldObject.LoadContent(null);
+        }
+
+        internal CoreWorld(ICoreGame game, string id, int numId, ICoreMap map, WorldOptions options)
         {
             Game = game;
             Id = id;
             NumId = numId;
+            WorldOptions = options;
             _actorManager = new ActorManager(game, this, game.TMGame.World.NpcManager);
             _map = map;
             string path = TMWorld.WorldPath;
@@ -817,7 +849,7 @@ namespace DaveTheMonitor.Core
                 FullPath = Path.Combine(FileSystem.RootPath, path);
             }
             _data = new CoreDataCollection<ICoreWorld>(this);
-            DrawOptions = WorldDrawOptions.All;
+            DrawOptions = options.DrawOptions;
         }
     }
 }

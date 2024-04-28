@@ -9,7 +9,9 @@ using StudioForge.Engine.GUI;
 using StudioForge.Engine.Integration;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
+using System;
 using System.Collections.Generic;
+using static System.Windows.Forms.Design.AxImporter;
 
 namespace DaveTheMonitor.Core.API
 {
@@ -94,6 +96,18 @@ namespace DaveTheMonitor.Core.API
         string FullPath { get; }
 
         /// <summary>
+        /// The total number of registered worlds.
+        /// </summary>
+        int WorldCount { get; }
+
+        /// <summary>
+        /// Returns true if this game has multiple worlds registered.
+        /// </summary>
+        // Internally, most patches related to multi-world generation don't do anything
+        // if this is false.
+        bool HasMultipleWorlds => WorldCount > 1;
+
+        /// <summary>
         /// Gets the local player with the specified <see cref="PlayerIndex"/>.
         /// </summary>
         /// <param name="playerIndex">The <see cref="PlayerIndex"/> of the player.</param>
@@ -163,7 +177,8 @@ namespace DaveTheMonitor.Core.API
         /// Registers a new world with the specified string ID. <see cref="ICorePlugin.InitializeWorld(ICoreWorld)"/> will be called for this new world.
         /// </summary>
         /// <param name="id">The ID of the world to add.</param>
-        void RegisterWorld(string id);
+        /// <param name="options">Options that control the world generation and definition.</param>
+        void RegisterWorld(string id, WorldOptions options);
 
         /// <summary>
         /// Gets am <see cref="IEnumerable{T}"/> of all worlds.
@@ -205,6 +220,40 @@ namespace DaveTheMonitor.Core.API
         /// <param name="actor">The actor to get.</param>
         /// <returns>The <see cref="ICoreActor"/> for the specified <see cref="ITMActor"/>.</returns>
         ICoreActor GetActor(ITMActor actor);
+
+        /// <summary>
+        /// Adds an action that will be invoked before a map draw stage.
+        /// </summary>
+        /// <param name="stage">The draw stage this action will be invoked at. Specify multiple stages to invoke this action before all of themm</param>
+        /// <param name="action">The action to invoke.</param>
+        void AddPreDrawWorldMap(WorldDrawStage stage, WorldDrawAction action);
+
+        /// <summary>
+        /// Adds an action that will be invoked after a map draw stage.
+        /// </summary>
+        /// <param name="stage">The draw stage this action will be invoked at.</param>
+        /// <param name="action">The action to invoke.</param>
+        void AddPostDrawWorldMap(WorldDrawStage stage, WorldDrawAction action);
+
+        /// <summary>
+        /// Runs all PreDrawWorldMap actions for the specified stage.
+        /// </summary>
+        /// <param name="stage">The draw stage.</param>
+        /// <param name="map">The map being drawn.</param>
+        /// <param name="player">The player.</param>
+        /// <param name="virtualPlayer">The virtual player.</param>
+        /// <param name="options">The draw options.</param>
+        void RunPreDrawWorldMap(WorldDrawStage stage, ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options);
+
+        /// <summary>
+        /// Runs all PostDrawWorldMap actions for the specified stage.
+        /// </summary>
+        /// <param name="stage">The draw stage.</param>
+        /// <param name="map">The map being drawn.</param>
+        /// <param name="player">The player.</param>
+        /// <param name="virtualPlayer">The virtual player.</param>
+        /// <param name="options">The draw options.</param>
+        void RunPostDrawWorldMap(WorldDrawStage stage, ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options);
 
         /// <summary>
         /// Returns true if the game has any state to save.

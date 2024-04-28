@@ -1,4 +1,5 @@
-﻿using DaveTheMonitor.Scripts;
+﻿using DaveTheMonitor.Core.Wrappers;
+using DaveTheMonitor.Scripts;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using StudioForge.BlockWorld;
@@ -37,6 +38,14 @@ namespace DaveTheMonitor.Core.API
         /// The game's ITMWorld implementation. Don't use this unless you're absolutely sure you need it.
         /// </summary>
         ITMWorld TMWorld { get; }
+
+        /// <summary>
+        /// The options that control this world's generation and definition.
+        /// </summary>
+        /// <remarks>
+        /// All properties are guaranteed to be initialized (ie. not null)
+        /// </remarks>
+        WorldOptions WorldOptions { get; }
 
         /// <summary>
         /// The main game instance this world belongs to.
@@ -142,6 +151,16 @@ namespace DaveTheMonitor.Core.API
         /// The full path of this world's save data.
         /// </summary>
         string FullPath { get; }
+
+        /// <summary>
+        /// This world's sky curtain.
+        /// </summary>
+        SkyCurtain SkyCurtain { get; }
+
+        /// <summary>
+        /// This world's starfield.
+        /// </summary>
+        Starfield Starfield { get; }
 
         /// <summary>
         /// The <see cref="BiomeType"/> of this world.

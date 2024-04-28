@@ -48,10 +48,13 @@ namespace DaveTheMonitor.Core
             }
             LoadTextures(_assets);
             LoadComponents(_assets, componentLoader);
-            string path = Path.Combine(FullPath, "MGContent");
-            if (Directory.Exists(path))
+            if (Directory.Exists(Path.Combine(FullPath, "MGContent")))
             {
                 MGContent = new ContentManager(CoreGlobals.Content.ServiceProvider, Path.Combine(FullPath, "MGContent"));
+            }
+            else if (Directory.Exists(Path.Combine(FullPath, "Content")))
+            {
+                MGContent = new ContentManager(CoreGlobals.Content.ServiceProvider, Path.Combine(FullPath, "Content"));
             }
             LoadPlugin(info);
         }

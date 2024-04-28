@@ -8,6 +8,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.BlockWorld;
+using StudioForge.Engine.Core;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
 using System;
@@ -15,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace DaveTheMonitor.Core.Plugin
 {
@@ -170,6 +172,7 @@ namespace DaveTheMonitor.Core.Plugin
             _game.ScriptCompiler = new ScriptCompiler();
             _game.ScriptCompiler.ErrorHandler += ScriptCompilerErrorHandler;
 
+            //RegisterTestWorlds();
             foreach (Mod mod in Game.ModManager.GetAllActivePlugins())
             {
                 mod.Plugin.InitializeGame(Game);
@@ -187,6 +190,82 @@ namespace DaveTheMonitor.Core.Plugin
             // We call this after ReadState so the player save state
             // is read before the player is added.
             _game.AddActors();
+        }
+
+        private void RegisterTestWorlds()
+        {
+            BiomeType type = BiomeType.Desert;
+            BiomeParams biomeParams = Game.TMGame.World.Header.BiomeParams.Clone();
+            biomeParams.Initialize(type, Globals1.SaveVersion, Game.TMGame.World.Header.MapSeed);
+            Game.RegisterWorld("Desert", new WorldOptions()
+            {
+                Biome = type,
+                BiomeParams = biomeParams,
+            });
+
+            type = BiomeType.SemiAlpine;
+            biomeParams = Game.TMGame.World.Header.BiomeParams.Clone();
+            biomeParams.Initialize(type, Globals1.SaveVersion, Game.TMGame.World.Header.MapSeed);
+            Game.RegisterWorld("SemiAlpine", new WorldOptions()
+            {
+                Biome = type,
+                BiomeParams = biomeParams
+            });
+
+            type = BiomeType.Grasslands;
+            biomeParams = Game.TMGame.World.Header.BiomeParams.Clone();
+            biomeParams.Initialize(type, Globals1.SaveVersion, Game.TMGame.World.Header.MapSeed);
+            Game.RegisterWorld("Grasslands", new WorldOptions()
+            {
+                Biome = type,
+                BiomeParams = biomeParams
+            });
+
+            type = BiomeType.MultiBiome;
+            biomeParams = Game.TMGame.World.Header.BiomeParams.Clone();
+            biomeParams.Initialize(type, Globals1.SaveVersion, Game.TMGame.World.Header.MapSeed);
+            Game.RegisterWorld("MultiBiome", new WorldOptions()
+            {
+                Biome = type,
+                BiomeParams = biomeParams
+            });
+
+            type = BiomeType.Flat;
+            biomeParams = Game.TMGame.World.Header.BiomeParams.Clone();
+            biomeParams.Initialize(type, Globals1.SaveVersion, Game.TMGame.World.Header.MapSeed);
+            Game.RegisterWorld("FlatGround", new WorldOptions()
+            {
+                Biome = type,
+                BiomeParams = biomeParams,
+                GroundBlock = Block.Basalt
+            });
+
+            biomeParams = Game.TMGame.World.Header.BiomeParams.Clone();
+            biomeParams.Initialize(type, Globals1.SaveVersion, Game.TMGame.World.Header.MapSeed);
+            Game.RegisterWorld("FlatNatural", new WorldOptions()
+            {
+                Biome = type,
+                BiomeParams = biomeParams,
+                FlatWorldType = FlatWorldType.Natural
+            });
+
+            biomeParams = Game.TMGame.World.Header.BiomeParams.Clone();
+            biomeParams.Initialize(type, Globals1.SaveVersion, Game.TMGame.World.Header.MapSeed);
+            Game.RegisterWorld("Sky", new WorldOptions()
+            {
+                Biome = type,
+                BiomeParams = biomeParams,
+                FlatWorldType = FlatWorldType.Sky
+            });
+
+            biomeParams = Game.TMGame.World.Header.BiomeParams.Clone();
+            biomeParams.Initialize(type, Globals1.SaveVersion, Game.TMGame.World.Header.MapSeed);
+            Game.RegisterWorld("Space", new WorldOptions()
+            {
+                Biome = type,
+                BiomeParams = biomeParams,
+                FlatWorldType = FlatWorldType.Space
+            });
         }
 
         private void ScriptPrintHandler(object sender, ScriptPrintEventArgs e)
@@ -244,7 +323,7 @@ namespace DaveTheMonitor.Core.Plugin
         /// </summary>
         public void UnloadMod()
         {
-            Unload();
+            Unload(false);
         }
 
         internal void HotLoad()
@@ -256,16 +335,55 @@ namespace DaveTheMonitor.Core.Plugin
             {
                 mod.Plugin.HotLoadMod();
             }
-            Unload();
+            Unload(true);
         }
 
-        private void Unload()
+        private void Unload(bool hotload)
         {
 #if DEBUG
             Log("Unload");
 #endif
             _game.ModManager.UnloadAndDisableAll();
+            UnloadWorlds(hotload);
             _patchHelper.Unpatch();
+            _game.Unload();
+            _game = null;
+            CoreMod = null;
+            _loadedAssemblies = null;
+            _patchHelper = null;
+            GC.Collect();
+        }
+
+        private void UnloadWorlds(bool hotload)
+        {
+            ICoreWorld overworld = Game.GetWorld("Core.Overworld");
+            if (hotload)
+            {
+                // We force the player into Core.Overworld when hotloading,
+                // but this isn't required when exiting the world.
+                ICorePlayer player = Game.GetLocalPlayer(PlayerIndex.One);
+                if (player.World.Id != "Core.Overworld")
+                {
+                    player.EnterWorld(overworld, player.Position);
+                }
+            }
+
+            foreach (ICoreWorld world in Game.GetAllWorlds())
+            {
+                if (world == overworld)
+                {
+                    continue;
+                }
+
+                if (world is CoreWorld coreWorld)
+                {
+                    coreWorld.Renderer?.MapRendererObject.UnloadContent();
+                }
+                if (world.Map.TMMap != overworld.Map.TMMap)
+                {
+                    ((Map)world.Map.TMMap).UnloadContent();
+                }
+            }
         }
 
         /// <summary>

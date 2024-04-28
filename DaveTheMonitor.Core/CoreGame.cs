@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Commands;
+using DaveTheMonitor.Core.Graphics;
 using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Core.Shaders;
 using DaveTheMonitor.Core.Storage;
@@ -20,6 +21,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using static StudioForge.Engine.Components.CameraComponent;
+using static System.Windows.Forms.Design.AxImporter;
 
 namespace DaveTheMonitor.Core
 {
@@ -36,14 +39,19 @@ namespace DaveTheMonitor.Core
         public IScriptRuntime ScriptRuntime { get; set; }
         public IScriptCompiler ScriptCompiler { get; set; }
         public string FullPath { get; private set; }
+        public int WorldCount => _worlds.Length;
         internal static Func<ICoreWorld, string, Vector3, Vector3, object> _spawnParticle;
         internal static Action<ICoreWorld, object> _destroyParticle;
         internal static AccessTools.FieldRef<object, ParticleData[]> _systemParticles;
         internal static AccessTools.FieldRef<object, List<ParticleData>> _customParticles;
+        private static WorldDrawStage[] _drawStages = Enum.GetValues<WorldDrawStage>();
         internal ICoreWorld _currentWorld;
+        private ICoreWorld _overworld;
         private ICoreWorld[] _worlds;
         private CoreDataCollection<ICoreGame> _data;
         private Dictionary<ulong, byte[]> _playerSaveData;
+        private Dictionary<WorldDrawStage, List<WorldDrawAction>> _preDrawActions;
+        private Dictionary<WorldDrawStage, List<WorldDrawAction>> _postDrawActions;
         private int _playerSaveStateTmVersion;
         private int _playerSaveStateCoreVersion;
         private bool _worldsInitialized;
@@ -67,7 +75,7 @@ namespace DaveTheMonitor.Core
 
         public ICorePlayer GetLocalPlayer(PlayerIndex playerIndex)
         {
-            return _currentWorld.ActorManager.GetPlayer(TMGame.GetLocalPlayer(playerIndex));
+            return _overworld.ActorManager.GetPlayer(TMGame.GetLocalPlayer(playerIndex));
         }
 
         public void AddNotification(string message)
@@ -112,9 +120,9 @@ namespace DaveTheMonitor.Core
             return ModManager.Call(modId, args);
         }
 
-        void ICoreGame.RegisterWorld(string id)
+        void ICoreGame.RegisterWorld(string id, WorldOptions options)
         {
-            CreateWorld(id);
+            CreateWorld(id, options);
         }
 
         public void InitializeAllWorlds()
@@ -137,28 +145,27 @@ namespace DaveTheMonitor.Core
             }
         }
 
-        private void CreateWorld(string id)
+        private void CreateWorld(string id, WorldOptions options)
         {
             SaveMapHead header = TMGame.World.Header;
             Map currentMap = (Map)TMGame.World.Map;
             ConstructorInfo ctor = AccessTools.Constructor(AccessTools.TypeByName("StudioForge.TotalMiner.MapStrategyTM"), new Type[] { TMGame.GetType() });
-            MapStrategy strategy = (MapStrategy)ctor.Invoke(new object[] { TMGame });
 
-            MapOptions options = new MapOptions()
+            options = new WorldOptions()
             {
-                TileSize = 1,
-                RegionSize = header.RegionSize,
-                ChunkSize = header.ChunkSize,
-                MapSize = header.MaxMapSize,
-                SeaLevel = currentMap.SeaLevel,
-                MapStrategy = strategy,
-                AllowMeshCreatorToSplitOrFade = true,
+                Size = options.Size ?? header.MaxMapSize,
+                RegionSize = options.RegionSize ?? header.RegionSize,
+                ChunkSize = options.ChunkSize ?? header.ChunkSize,
+                Biome = options.Biome ?? TMGame.World.CurrentBiome,
+                BiomeParams = options.BiomeParams ?? header.BiomeParams,
+                DrawOptions = options.DrawOptions,
+                GroundBlock = options.GroundBlock ?? GetGroundBlock(options.FlatWorldType, header.TerrainData),
+                FlatWorldType = options.FlatWorldType ?? GetFlatType(options.GroundBlock, header.TerrainData),
+                Seed = options.Seed ?? header.MapSeed,
+                SeaLevel = options.SeaLevel ?? currentMap.SeaLevel,
+                MapStrategy = options.MapStrategy ?? (MapStrategy)ctor.Invoke(new object[] { TMGame }),
             };
-            CreateWorld(id, options);
-        }
 
-        private void CreateWorld(string id, MapOptions options)
-        {
             Type[] types = new Type[]
             {
                 TMGame.GetType(),
@@ -181,43 +188,98 @@ namespace DaveTheMonitor.Core
             {
                 TMGame,
                 id,
-                options.TileSize,
-                options.MapSize,
+                1,
+                options.Size.Value,
                 new BoxInt()
                 {
-                    Min = new GlobalPoint3D(-options.MapSize.X / 2, 0, -options.MapSize.Z / 2),
-                    Max = new GlobalPoint3D(options.MapSize.X / 2, options.MapSize.Y, options.MapSize.Z / 2)
+                    Min = new GlobalPoint3D(-options.Size.Value.X / 2, 0, -options.Size.Value.Z / 2),
+                    Max = new GlobalPoint3D(options.Size.Value.X / 2, options.Size.Value.Y, options.Size.Value.Z / 2)
                 },
-                options.RegionSize,
-                options.ChunkSize,
+                options.RegionSize.Value,
+                options.ChunkSize.Value,
                 Globals1.BlockData,
                 15,
-                ((Map)TMGame.World.Map).Seed,
+                options.Seed.Value,
                 (ushort)4,
                 128,
                 options.MapStrategy,
                 ((Map)TMGame.World.Map).IsHost,
-                options.AllowMeshCreatorToSplitOrFade
+                true
             };
 
             Map map = (Map)AccessTools.Constructor(AccessTools.TypeByName("StudioForge.TotalMiner.MapTM"), types).Invoke(param);
-            map.SeaLevel = options.SeaLevel;
+            map.SeaLevel = options.SeaLevel.Value;
+            SetBlockIds(map);
+            map.PregenerateRegions(false, true, null);
+            CreateWorld(id, new CoreMap((ITMMap)map), options);
+        }
+
+        private Block GetGroundBlock(FlatWorldType? definedType, TerrainData data)
+        {
+            if (definedType.HasValue)
+            {
+                return definedType switch
+                {
+                    FlatWorldType.Natural => Block.Grass,
+                    FlatWorldType.Default => Block.Grass,
+                    FlatWorldType.Sky => Block.None,
+                    FlatWorldType.Space => Block.None,
+                    _ => Block.Grass
+                };
+            }
+
+            if (data.BiomeType == BiomeType.Flat)
+            {
+                return data.GroundBlock switch
+                {
+                    Item.NaturalWorld => Block.Grass,
+                    Item.SkyWorld => Block.None,
+                    Item.SpaceWorld => Block.None,
+                    _ => data.GroundBlock < Item.zLastBlockID ? (Block)data.GroundBlock : Block.None
+                };
+            }
+
+            return Block.Grass;
+        }
+
+        private FlatWorldType GetFlatType(Block? definedBlock, TerrainData data)
+        {
+            if (definedBlock.HasValue)
+            {
+                return FlatWorldType.Default;
+            }
+
+            if (data.BiomeType == BiomeType.Flat)
+            {
+                return data.GroundBlock switch
+                {
+                    Item.NaturalWorld => FlatWorldType.Natural,
+                    Item.SkyWorld => FlatWorldType.Sky,
+                    Item.SpaceWorld => FlatWorldType.Space,
+                    _ => FlatWorldType.Default
+                };
+            }
+
+            return FlatWorldType.Natural;
+        }
+
+        private void SetBlockIds(Map map)
+        {
             map.OutOfBoundsBlockID = (byte)Block.zLastBlockID;
             map.WaterBlockID = (byte)Block.Water;
             map.LavaBlockID = (byte)Block.Lava;
             map.RopeBlockID = (byte)Block.Rope;
             map.BedrockID = (byte)Block.Bedrock;
             map.InvisibleBarrierID = (byte)Block.InvisibleBarrier;
-            map.PregenerateRegions(false, true, null);
-            CreateWorld(id, new CoreMap((ITMMap)map));
         }
 
-        private void CreateWorld(string id, ICoreMap map)
+        private void CreateWorld(string id, ICoreMap map, WorldOptions options)
         {
             int index = _worlds.Length;
             Array.Resize(ref _worlds, _worlds.Length + 1);
-            ICoreWorld world = new CoreWorld(this, id, index, map);
+            CoreWorld world = new CoreWorld(this, id, index, map, options);
             _worlds[index] = world;
+            world.LoadContent();
 
             // We test if worlds have been initialized here so we don't
             // call ICorePlugin.InitializeWorld until Initialize and
@@ -271,7 +333,7 @@ namespace DaveTheMonitor.Core
 
         public ICorePlayer GetPlayer(ITMPlayer player)
         {
-            return _currentWorld.ActorManager.GetPlayer(player);
+            return _overworld.ActorManager.GetPlayer(player);
         }
 
         public ICoreActor GetActor(ITMActor actor)
@@ -286,7 +348,7 @@ namespace DaveTheMonitor.Core
             {
                 ModManager.ModUpdate(world);
             }
-            foreach (Actor actor in _currentWorld.ActorManager.Actors)
+            foreach (ICoreActor actor in _currentWorld.ActorManager.Actors)
             {
                 ModManager.ModUpdate(actor);
             }
@@ -319,6 +381,84 @@ namespace DaveTheMonitor.Core
             foreach (ITMActor actor in TMGame.World.NpcManager.NpcList)
             {
                 _currentWorld.ActorManager.AddActor(actor);
+            }
+        }
+
+        public void AddPreDrawWorldMap(WorldDrawStage stage, WorldDrawAction action)
+        {
+            _preDrawActions ??= new Dictionary<WorldDrawStage, List<WorldDrawAction>>();
+
+            foreach (WorldDrawStage s in _drawStages)
+            {
+                WorldDrawStage s2 = stage & s;
+                if (s2 > 0 && _preDrawActions.TryGetValue(s2, out List<WorldDrawAction> actions))
+                {
+                    actions.Add(action);
+                }
+                else
+                {
+                    actions = new List<WorldDrawAction>()
+                    {
+                        action
+                    };
+                    _preDrawActions[s2] = actions;
+                }
+            }
+        }
+
+        public void AddPostDrawWorldMap(WorldDrawStage stage, WorldDrawAction action)
+        {
+            _postDrawActions ??= new Dictionary<WorldDrawStage, List<WorldDrawAction>>();
+
+            foreach (WorldDrawStage s in _drawStages)
+            {
+                WorldDrawStage s2 = stage & s;
+                if (s2 > 0 && _postDrawActions.TryGetValue(s2, out List<WorldDrawAction> actions))
+                {
+                    actions.Add(action);
+                }
+                else
+                {
+                    actions = new List<WorldDrawAction>()
+                    {
+                        action
+                    };
+                    _postDrawActions[s2] = actions;
+                }
+            }
+        }
+
+        public void RunPreDrawWorldMap(WorldDrawStage stage, ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options)
+        {
+            if (_preDrawActions == null)
+            {
+                return;
+            }
+
+            if (_preDrawActions.TryGetValue(stage, out List<WorldDrawAction> actions))
+            {
+                RunActions(actions, map, player, virtualPlayer, stage, options);
+            }
+        }
+
+        public void RunPostDrawWorldMap(WorldDrawStage stage, ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawOptions options)
+        {
+            if (_postDrawActions == null)
+            {
+                return;
+            }
+
+            if (_postDrawActions.TryGetValue(stage, out List<WorldDrawAction> actions))
+            {
+                RunActions(actions, map, player, virtualPlayer, stage, options);
+            }
+        }
+
+        private void RunActions(List<WorldDrawAction> list, ITMMap map, ICorePlayer player, ITMPlayer virtualPlayer, WorldDrawStage stage, WorldDrawOptions options)
+        {
+            foreach (WorldDrawAction action in list)
+            {
+                action(map, player, virtualPlayer, options, stage);
             }
         }
 
@@ -508,6 +648,20 @@ namespace DaveTheMonitor.Core
             }
         }
 
+        public void Unload()
+        {
+            _worlds = null;
+            _currentWorld = null;
+            ItemRegistry = null;
+            ActorRegistry = null;
+            ScriptRuntime.Dispose();
+            ScriptRuntime = null;
+            ScriptCompiler = null;
+            ModManager = null;
+            ParticlesModule = null;
+            MapComponentLoader = null;
+        }
+
         public T GetData<T>(ICoreMod mod) where T : ICoreData<ICoreGame>
         {
             return _data.GetData<T>(mod);
@@ -525,10 +679,29 @@ namespace DaveTheMonitor.Core
 
         internal CoreGame(ITMGame game)
         {
+            CoreMap map = new CoreMap(game.World.Map);
+            SaveMapHead header = game.World.Header;
+            WorldOptions overworldOptions = new WorldOptions()
+            {
+                Biome = game.World.CurrentBiome,
+                BiomeParams = game.World.Header.BiomeParams,
+                Size = (Point3D)map.MapSize,
+                RegionSize = map.RegionSize,
+                ChunkSize = map.ChunkSize,
+                DrawOptions = WorldDrawOptions.All,
+                MapStrategy = map.BWMap.MapStrategy,
+                SeaLevel = header.TerrainData.SeaLevel,
+                Seed = map.BWMap.Seed,
+                GroundBlock = GetGroundBlock(null, header.TerrainData),
+                FlatWorldType = GetFlatType(null, header.TerrainData),
+            };
+
             TMGame = game;
-            _currentWorld = new CoreWorld(this, "Core.Overworld", 0, new CoreMap(TMGame.World.Map));
+            _overworld = new CoreWorld(this, "Core.Overworld", 0, map, overworldOptions);
+            ((CoreWorld)_overworld).LoadContent();
+            _currentWorld = _overworld;
             _worldsInitialized = false;
-            _worlds = new ICoreWorld[1] { _currentWorld };
+            _worlds = new ICoreWorld[1] { _overworld };
             _data = new CoreDataCollection<ICoreGame>(this);
             MapComponentLoader = new MapComponentLoader(this);
             ModManager = new ModManager(MapComponentLoader);
