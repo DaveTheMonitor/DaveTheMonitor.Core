@@ -13,7 +13,7 @@ namespace DaveTheMonitor.Core.Assets
         public ICoreMap Map { get; private set; }
 
         /// <summary>
-        /// Creates a new asset containing this specified map.
+        /// Creates a new asset containing the specified map.
         /// </summary>
         /// <param name="fullPath">The full path of this asset.</param>
         /// <param name="name">The name of this asset.</param>

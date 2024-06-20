@@ -12,6 +12,7 @@ namespace DaveTheMonitor.Core.Assets
         /// </summary>
         public Texture2D Texture { get; private set; }
 
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);

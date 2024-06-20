@@ -13,11 +13,11 @@ namespace DaveTheMonitor.Core.Assets
         public JsonAnimationController AnimationController { get; private set; }
 
         /// <summary>
-        /// Creates a new asset containing this specified map.
+        /// Creates a new asset containing the specified animation controller.
         /// </summary>
         /// <param name="fullPath">The full path of this asset.</param>
         /// <param name="name">The name of this asset.</param>
-        /// <param name="animation">The animation controller of this asset.</param>
+        /// <param name="animationController">The animation controller of this asset.</param>
         public CoreAnimationControllerAsset(string fullPath, string name, JsonAnimationController animationController) : base(fullPath, name)
         {
             AnimationController = animationController;
