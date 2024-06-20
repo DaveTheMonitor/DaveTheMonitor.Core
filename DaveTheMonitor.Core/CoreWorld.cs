@@ -26,7 +26,7 @@ namespace DaveTheMonitor.Core
         public ICoreActorManager ActorManager => _actorManager;
         public ITMEntityManager TMEntityManager => TMWorld.EntityManager;
         public ITMEnvManager TMEnvironmentManager => TMWorld.EnvironManager;
-        public ICoreActorRenderer ActorRenderer => _actorRenderer;
+        public ICoreActorRenderer ActorRenderer { get; private set; }
         public GameMode GameMode => TMWorld.GameMode;
         public GameDifficulty Difficulty => TMWorld.Difficulty;
         public bool IsCreativeMode => TMWorld.IsCreativeMode;
@@ -52,7 +52,7 @@ namespace DaveTheMonitor.Core
         private ActorManager _actorManager;
         private CoreMap _map;
         private CoreDataCollection<ICoreWorld> _data;
-        private ActorRenderer _actorRenderer;
+        private bool _disposedValue;
 
         #region Scripts
 
@@ -630,7 +630,7 @@ namespace DaveTheMonitor.Core
 
         public void Update()
         {
-            _actorRenderer.Update();
+            ActorRenderer.Update();
             ActorManager.Update();
         }
 
@@ -671,6 +671,29 @@ namespace DaveTheMonitor.Core
             return _data.ShouldSaveState();
         }
 
+        private void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    ActorRenderer.Dispose();
+                }
+
+                ActorRenderer = null;
+                _map = null;
+                _data = null;
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
         internal CoreWorld(ICoreGame game, string id)
         {
             Game = game;
@@ -687,7 +710,7 @@ namespace DaveTheMonitor.Core
                 FullPath = Path.Combine(FileSystem.RootPath, path);
             }
             _data = new CoreDataCollection<ICoreWorld>(this);
-            _actorRenderer = new ActorRenderer();
+            ActorRenderer = new ActorRenderer();
         }
     }
 }

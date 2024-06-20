@@ -31,7 +31,7 @@ namespace DaveTheMonitor.Core.API
     /// as it may behave in unexpected ways after this change.
     /// </para>
     /// </remarks>
-    public interface ICoreWorld : IHasCoreData<ICoreWorld>, IScriptObject, IHasBinaryState
+    public interface ICoreWorld : IHasCoreData<ICoreWorld>, IScriptObject, IHasBinaryState, IDisposable
     {
         /// <summary>
         /// The game's ITMWorld implementation. Don't use this unless you're absolutely sure you need it.

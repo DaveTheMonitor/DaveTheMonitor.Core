@@ -265,6 +265,7 @@ namespace DaveTheMonitor.Core.Plugin
             Log("Unload");
 #endif
             _game.ModManager.UnloadAndDisableAll();
+            _game.Dispose();
             _patchHelper.Unpatch();
         }
 

@@ -39,27 +39,7 @@ namespace DaveTheMonitor.Core.Animation
         private EffectParameter _world;
         private EffectParameter _viewProjection;
         private EffectParameter _cameraPosition;
-        private EffectParameter _tintColor;
         private EffectParameter _alpha;
-        private EffectParameter _maxLight;
-        private EffectParameter _farClip;
-        private EffectParameter _fadeStart;
-        private EffectParameter _fogStart;
-        private EffectParameter _fogEnd;
-        private EffectParameter _fogColor;
-        private EffectParameter _rayDistance;
-        private EffectParameter _sunDirection;
-        private EffectParameter _sunPosition;
-        private EffectParameter _moonPosition;
-        private EffectParameter _sunEffectColorTextCoords;
-        private EffectParameter _moonEffectColorTextCoords;
-        private EffectParameter _sunSideNormal;
-        private EffectParameter _texture;
-        private EffectParameter _lightCycle;
-        private EffectParameter _lanturnColor;
-        private EffectParameter _lanturnRange;
-        private EffectParameter _lightMapTexture;
-        private EffectParameter _nightLightMapTexture;
         private LineRenderer _lineRenderer;
         private List<ActorPartSnapshot> _snapshot;
         private List<ICoreActor> _actorsToRender;
@@ -72,6 +52,7 @@ namespace DaveTheMonitor.Core.Animation
         private IndexBuffer _indices;
         private int _vertexCount;
         private bool _drawPositions;
+        private bool _disposedValue;
 
         public void LoadContent()
         {
@@ -79,27 +60,7 @@ namespace DaveTheMonitor.Core.Animation
             _world = _shader.Parameters["World"];
             _viewProjection = _shader.Parameters["ViewProjection"];
             _cameraPosition = _shader.Parameters["CameraPosition"];
-            _tintColor = _shader.Parameters["TintColor"];
             _alpha = _shader.Parameters["Alpha"];
-            _farClip = _shader.Parameters["FarClip"];
-            _fadeStart = _shader.Parameters["FadeStart"];
-            _fogStart = _shader.Parameters["FogStart"];
-            _fogEnd = _shader.Parameters["FogEnd"];
-            _fogColor = _shader.Parameters["FogColor"];
-            _rayDistance = _shader.Parameters["RayDistance"];
-            _sunDirection = _shader.Parameters["SunDirection"];
-            _sunPosition = _shader.Parameters["SunPosition"];
-            _moonPosition = _shader.Parameters["MoonPosition"];
-            _sunEffectColorTextCoords = _shader.Parameters["SunEffectColorTextCoords"];
-            _moonEffectColorTextCoords = _shader.Parameters["MoonEffectColorTextCoords"];
-            _sunSideNormal = _shader.Parameters["SunSideNormal"];
-            _maxLight = _shader.Parameters["MaxLight"];
-            _texture = _shader.Parameters["Texture1"];
-            _lightCycle = _shader.Parameters["LightCycle"];
-            _lanturnColor = _shader.Parameters["LanturnColor"];
-            _lanturnRange = _shader.Parameters["LanturnRange"];
-            _lightMapTexture = _shader.Parameters["LightMapTexture"];
-            _nightLightMapTexture = _shader.Parameters["NightLightMapTexture"];
         }
 
         public void Update()
@@ -124,6 +85,7 @@ namespace DaveTheMonitor.Core.Animation
 
             _viewProjection.SetValue(virtualPlayer.ViewMatrix * player.ProjectionMatrix);
             _cameraPosition.SetValue(virtualPlayer.EyePosition);
+            _world.SetValue(virtualPlayer.WorldShake);
             _alpha.SetValue(1f);
             GraphicsDevice device = CoreGlobals.GraphicsDevice;
             device.BlendState = BlendState.AlphaBlend;
@@ -180,8 +142,6 @@ namespace DaveTheMonitor.Core.Animation
                     {
                         highestVertexCount = part.Part.VertexCount;
                     }
-
-                    _world.SetValue(virtualPlayer.WorldShake);
 
                     Matrix transform = part.Transform * actorMatrix;
 
@@ -275,6 +235,41 @@ namespace DaveTheMonitor.Core.Animation
             _lineRenderer.DrawLine(pos, pos + (Vector3.Right * length), x, x);
             _lineRenderer.DrawLine(pos, pos + (Vector3.Up * length), y, y);
             _lineRenderer.DrawLine(pos, pos + (Vector3.Backward * length), z, z);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _indices?.Dispose();
+                    _instanceBuffer?.Dispose();
+                    _lineRenderer?.UnloadContent();
+                }
+
+                _shader = null;
+                _world = null;
+                _viewProjection = null;
+                _cameraPosition = null;
+                _alpha = null;
+                _lineRenderer = null;
+                _snapshot = null;
+                _actorsToRender = null;
+                _instanceData = null;
+                _instanceBuffer = null;
+                _lineRenderer = null;
+                _pool = null;
+                _bindings = null;
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         public ActorRenderer()

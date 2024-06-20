@@ -49,6 +49,7 @@ namespace DaveTheMonitor.Core
         private int _playerSaveStateCoreVersion;
         private CoreDataInitializer<ICoreActor> _playerDataInitializer;
         private CoreDataInitializer<ICoreActor>[] _actorDataInitializers;
+        private bool _disposedValue;
 
         static CoreGame()
         {
@@ -468,6 +469,34 @@ namespace DaveTheMonitor.Core
         public ICoreData<ICoreGame> SetDefaultData(ICoreData<ICoreGame> data) => _data.SetDefaultData(data);
         public T SetDefaultData<T>(T data) where T : ICoreData<ICoreGame> => _data.SetDefaultData(data);
         public T SetDefaultData<T>() where T : ICoreData<ICoreGame>, new() => _data.SetDefaultData<T>();
+
+        private void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    foreach (ICoreWorld world in _worlds)
+                    {
+                        world.Dispose();
+                    }
+                }
+
+                _worlds = null;
+                _playerDataInitializer = null;
+                _actorDataInitializers = null;
+                _data = null;
+                _customParticles = null;
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
 
         internal CoreGame(ITMGame game)
         {

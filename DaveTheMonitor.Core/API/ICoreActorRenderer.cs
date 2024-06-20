@@ -1,11 +1,12 @@
 ﻿using StudioForge.TotalMiner.API;
+using System;
 
 namespace DaveTheMonitor.Core.API
 {
     /// <summary>
     /// Used to render actors with custom models.
     /// </summary>
-    public interface ICoreActorRenderer
+    public interface ICoreActorRenderer : IDisposable
     {
         /// <summary>
         /// If true, the position and pivot of each part will be drawn. Useful for debugging or ensuring your model's positions and pivots are correct.
@@ -16,6 +17,11 @@ namespace DaveTheMonitor.Core.API
         /// Loads the content for this actor renderer.
         /// </summary>
         void LoadContent();
+
+        /// <summary>
+        /// Called every frame.
+        /// </summary>
+        void Update();
 
         /// <summary>
         /// Adds an actor to be rendered in the next frame.

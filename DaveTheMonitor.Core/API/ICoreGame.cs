@@ -10,6 +10,7 @@ using StudioForge.Engine.GUI;
 using StudioForge.Engine.Integration;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
+using System;
 using System.Collections.Generic;
 
 namespace DaveTheMonitor.Core.API
@@ -17,7 +18,7 @@ namespace DaveTheMonitor.Core.API
     /// <summary>
     /// A main game instance containing data and information independent of the world.
     /// </summary>
-    public interface ICoreGame : IHasCoreData<ICoreGame>, IHasBinaryState
+    public interface ICoreGame : IHasCoreData<ICoreGame>, IHasBinaryState, IDisposable
     {
         /// <summary>
         /// The game's <see cref="ITMGame"/> implementation. Don't use this unless you're absolutely sure you need it.
