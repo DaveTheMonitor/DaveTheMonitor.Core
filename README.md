@@ -26,36 +26,6 @@ Status: Early Build
 
 Allows mods to add new Actor Effects that can be given to players and NPCs. Effects can be defined with C# or Json and can use icon and background textures from the mod. The Effects module has support for the Particles module.
 
-### Magic Module
-
-Status: In Development
-
-Allows mods to add items that can be used in the new custom magic system.
-
-### Combat Module
-
-Status: In Development
-
-Reworks combat to be less RNG-based by making attacks deal set damage, lowered by defense.
-
-### Skill Module
-
-Status: In Development
-
-Reworks skills to use a point-based system.
-
-### Boss Module
-
-Status: In Development
-
-Allows certain NPCs to be "boss" enemies, which show a health bar on screen and can have special dialogue.
-
-### Vehicle Module
-
-Status: In Development
-
-Allows creating vehicles that can be driven by players.
-
 ### Weather Module
 
 Status: In Development
