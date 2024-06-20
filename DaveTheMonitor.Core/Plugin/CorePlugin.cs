@@ -26,14 +26,17 @@ namespace DaveTheMonitor.Core.Plugin
         /// Main main CorePlugin instance.
         /// </summary>
         public static CorePlugin Instance { get; private set; }
+
+        /// <summary>
+        /// Core's ICoreMod.
+        /// </summary>
+        public static ICoreMod CoreMod { get; private set; }
+
         /// <summary>
         /// Core's ITMMod.
         /// </summary>
         public ITMMod TMMod { get; private set; }
-        /// <summary>
-        /// Core's ICoreMod.
-        /// </summary>
-        public ICoreMod CoreMod { get; private set; }
+        
         /// <summary>
         /// The main game instance.
         /// </summary>

@@ -2,6 +2,7 @@
 using DaveTheMonitor.Core.Animation.Json;
 using DaveTheMonitor.Core.Assets;
 using DaveTheMonitor.Core.Assets.Loaders;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.TotalMiner;
 using System;
@@ -123,6 +124,14 @@ namespace DaveTheMonitor.Core.API
         /// <param name="name">The name of this asset. The name can specify a mod ID that the component is from.</param>
         /// <returns>The asset with the specified name, or null if the asset is not found.</returns>
         JsonAnimationController LoadAnimationController(ICoreMod mod, string name);
+
+        /// <summary>
+        /// Loads a <see cref="SoundEffect"/> from any mod, getting the asset from <paramref name="mod"/> if the ID doesn't specify a target mod.
+        /// </summary>
+        /// <param name="mod">The default fallback mod.</param>
+        /// <param name="name">The name of this asset. The name can specify a mod ID that the component is from.</param>
+        /// <returns>The asset with the specified name, or null if the asset is not found.</returns>
+        SoundEffect LoadSound(ICoreMod mod, string name);
 
         /// <summary>
         /// Calls <see cref="ICorePlugin.ModCall(object[])"/> for the mod with the specified ID, if it exists.

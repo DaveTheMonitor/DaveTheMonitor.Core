@@ -314,6 +314,76 @@ namespace DaveTheMonitor.Core.API
         void TeleportActors(GlobalPoint3D min, GlobalPoint3D max, GlobalPoint3D dest, bool relative);
 
         /// <summary>
+        /// Plays a sound asset.
+        /// </summary>
+        /// <param name="sound">The sound to play.</param>
+        /// <returns>The <see cref="SoundEffectInstance"/> for the sound.</returns>
+        SoundEffectInstance PlaySound(string sound);
+
+        /// <summary>
+        /// Plays a sound asset with the specified volume, pitch, and pan.
+        /// </summary>
+        /// <param name="sound">The sound to play.</param>
+        /// <param name="volume">The volume of the sound.</param>
+        /// <param name="pitch">The pitch of the sound.</param>
+        /// <param name="pan">The pan of the sound.</param>
+        /// <returns>The <see cref="SoundEffectInstance"/> for the sound.</returns>
+        SoundEffectInstance PlaySound(string sound, float volume, float pitch, float pan);
+
+        /// <summary>
+        /// Plays a sound asset at the specified position.
+        /// </summary>
+        /// <param name="sound">The sound to play.</param>
+        /// <param name="position">The position of the sound.</param>
+        /// <returns>The <see cref="SoundEffectInstance"/> for the sound.</returns>
+        SoundEffectInstance PlaySound(string sound, Vector3 position);
+
+        /// <summary>
+        /// Plays a sound asset at the specified position with the specified volume and pitch.
+        /// </summary>
+        /// <param name="sound">The sound to play.</param>
+        /// <param name="position">The position of the sound.</param>
+        /// <param name="volume">The volume of the sound.</param>
+        /// <param name="pitch">The pitch of the sound.</param>
+        /// <returns>The <see cref="SoundEffectInstance"/> for the sound.</returns>
+        SoundEffectInstance PlaySound(string sound, Vector3 position, float volume, float pitch);
+
+        /// <summary>
+        /// Plays a sound effect.
+        /// </summary>
+        /// <param name="sound">The sound to play.</param>
+        /// <returns>The <see cref="SoundEffectInstance"/> for the sound.</returns>
+        SoundEffectInstance PlaySound(SoundEffect sound);
+
+        /// <summary>
+        /// Plays a sound effect with the specified volume, pitch, and pan.
+        /// </summary>
+        /// <param name="sound">The sound to play.</param>
+        /// <param name="volume">The volume of the sound.</param>
+        /// <param name="pitch">The pitch of the sound.</param>
+        /// <param name="pan">The pan of the sound.</param>
+        /// <returns>The <see cref="SoundEffectInstance"/> for the sound.</returns>
+        SoundEffectInstance PlaySound(SoundEffect sound, float volume, float pitch, float pan);
+
+        /// <summary>
+        /// Plays a sound effect at the specified position.
+        /// </summary>
+        /// <param name="sound">The sound to play.</param>
+        /// <param name="position">The position of the sound.</param>
+        /// <returns>The <see cref="SoundEffectInstance"/> for the sound.</returns>
+        SoundEffectInstance PlaySound(SoundEffect sound, Vector3 position);
+
+        /// <summary>
+        /// Plays a sound effect at the specified position with the specified volume and pitch.
+        /// </summary>
+        /// <param name="sound">The sound to play.</param>
+        /// <param name="position">The position of the sound.</param>
+        /// <param name="volume">The volume of the sound.</param>
+        /// <param name="pitch">The pitch of the sound.</param>
+        /// <returns>The <see cref="SoundEffectInstance"/> for the sound.</returns>
+        SoundEffectInstance PlaySound(SoundEffect sound, Vector3 position, float volume, float pitch);
+
+        /// <summary>
         /// Gets the smallest zone at the specified position.
         /// </summary>
         /// <param name="p">The position to test.</param>

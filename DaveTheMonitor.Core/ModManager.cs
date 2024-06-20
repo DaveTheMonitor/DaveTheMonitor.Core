@@ -4,6 +4,7 @@ using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Assets;
 using DaveTheMonitor.Core.Assets.Loaders;
 using DaveTheMonitor.Core.Plugin;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
@@ -79,7 +80,7 @@ namespace DaveTheMonitor.Core
                     defining = mod;
                 }
             }
-            return defining ?? CorePlugin.Instance.CoreMod;
+            return defining ?? CorePlugin.CoreMod;
         }
 
         public ICoreMod GetDefiningMod(Item item)
@@ -95,7 +96,7 @@ namespace DaveTheMonitor.Core
                     defining = mod;
                 }
             }
-            return defining ?? CorePlugin.Instance.CoreMod;
+            return defining ?? CorePlugin.CoreMod;
         }
 
         public CoreModAsset LoadAsset(ICoreMod mod, string name)
@@ -144,6 +145,12 @@ namespace DaveTheMonitor.Core
         {
             ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
             return targetMod.Content.LoadAnimationController(strippedName);
+        }
+
+        public SoundEffect LoadSound(ICoreMod mod, string name)
+        {
+            ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
+            return targetMod.Content.LoadSound(strippedName);
         }
 
         private ICoreMod GetTargetMod(string name, out string strippedName)
@@ -380,6 +387,7 @@ namespace DaveTheMonitor.Core
                 new AssetTypeInfo(typeof(CoreActorModelAsset), "Models", "*.json", new CoreActorModelAssetLoader()),
                 new AssetTypeInfo(typeof(CoreActorAnimationAsset), "Animations", "*.json", new CoreActorAnimationAssetLoader()),
                 new AssetTypeInfo(typeof(CoreAnimationControllerAsset), "AnimationControllers", "*.json", new CoreAnimationControllerAssetLoader()),
+                new AssetTypeInfo(typeof(CoreSoundAsset), "Sounds", "*.wav", new CoreSoundAssetLoader()),
             };
         }
     }

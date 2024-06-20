@@ -1,8 +1,10 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Commands;
+using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Scripts;
 using DaveTheMonitor.Scripts.Compiler;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using StudioForge.Engine;
 using StudioForge.Engine.Core;
 using StudioForge.Engine.Integration;
@@ -202,6 +204,38 @@ namespace DaveTheMonitor.Core
             void HandleRuntimeError(object sender, ScriptErrorEventArgs e)
             {
                 log.WriteLine($"{e.Code} : {e.Header} : {e.Message}");
+            }
+        }
+
+        [ConsoleCommand("playsound", "Plays the specified sound asset.", "Plays the specified sound asset if it exists.", "sound")]
+        [ConsoleCommandArg(nameof(id), "id", "The sound effect to play.", true, "i")]
+        [ConsoleCommandArg(nameof(position), "position", "The position to play the sound at.", false, "p")]
+        [ConsoleCommandArg(nameof(volume), "volume", "The volume to play the sound at.", false, "v")]
+        [ConsoleCommandArg(nameof(pitch), "pitch", "The pitch to play the sound at.", false, "p")]
+        [ConsoleCommandArg(nameof(pan), "pan", "The pan to play the sound at.", false)]
+        public static void PlaySound(ICorePlayer player, IOutputLog log, string id, Vector3? position, float? volume, float? pitch, float? pan)
+        {
+            ICoreGame game = player.Game;
+            SoundEffect sound = game.ModManager.LoadSound(CorePlugin.CoreMod, id);
+            if (sound == null)
+            {
+                log.WriteLine($"Sound {id} not found. Are you missing a mod ID?");
+                return;
+            }
+
+            volume ??= 1;
+            pitch ??= 0;
+            pan ??= 0;
+
+            if (position.HasValue)
+            {
+                player.World.PlaySound(sound, position.Value, volume.Value, pitch.Value);
+                log.WriteLine($"Playing sound {id} at {position}.");
+            }
+            else
+            {
+                player.World.PlaySound(sound, volume.Value, pitch.Value, pan.Value);
+                log.WriteLine($"Playing sound {id}.");
             }
         }
     }

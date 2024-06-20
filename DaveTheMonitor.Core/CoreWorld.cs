@@ -1,6 +1,7 @@
 ﻿using DaveTheMonitor.Core.Animation;
 using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Core.Scripts;
 using DaveTheMonitor.Scripts;
 using DaveTheMonitor.Scripts.Attributes;
@@ -52,6 +53,7 @@ namespace DaveTheMonitor.Core
         private ActorManager _actorManager;
         private CoreMap _map;
         private CoreDataCollection<ICoreWorld> _data;
+        private SoundManager _soundManager;
         private bool _disposedValue;
 
         #region Scripts
@@ -628,8 +630,76 @@ namespace DaveTheMonitor.Core
             TMWorld.TeleportEntities(min, max, dest, relative);
         }
 
+        public SoundEffectInstance PlaySound(string sound, Vector3 position)
+        {
+            return PlaySound(sound, position, 1, 0);
+        }
+
+        public SoundEffectInstance PlaySound(string sound, Vector3 position, float volume, float pitch)
+        {
+            SoundEffect sfx = Game.ModManager.LoadSound(CorePlugin.CoreMod, sound);
+            if (sfx == null)
+            {
+                return null;
+            }
+
+            return PlaySound(sfx, position, volume, pitch);
+        }
+
+        public SoundEffectInstance PlaySound(string sound)
+        {
+            return PlaySound(sound, 1, 0, 0);
+        }
+
+        public SoundEffectInstance PlaySound(string sound, float volume, float pitch, float pan)
+        {
+            SoundEffect sfx = Game.ModManager.LoadSound(CorePlugin.CoreMod, sound);
+            if (sfx == null)
+            {
+                return null;
+            }
+
+            return PlaySound(sfx, volume, pitch, pan);
+        }
+
+        public SoundEffectInstance PlaySound(SoundEffect sound)
+        {
+            return PlaySound(sound, 1, 0, 0);
+        }
+
+        public SoundEffectInstance PlaySound(SoundEffect sound, float volume, float pitch, float pan)
+        {
+            return _soundManager.PlaySound(sound, volume, pitch, pan);
+        }
+
+        public SoundEffectInstance PlaySound(SoundEffect sound, Vector3 position)
+        {
+            return PlaySound(sound, position, 1, 0);
+        }
+
+        public SoundEffectInstance PlaySound(SoundEffect sound, Vector3 position, float volume, float pitch)
+        {
+            AudioListener listener = GetClosestListener(position);
+            if (listener == null)
+            {
+                return null;
+            }
+
+            AudioEmitter emitter = new AudioEmitter()
+            {
+                Position = position,
+                Forward = Vector3.Forward,
+                Up = Vector3.Up,
+                Velocity = Vector3.Zero,
+                DopplerScale = 1
+            };
+
+            return _soundManager.PlaySound(sound, listener, emitter, volume, pitch);
+        }
+
         public void Update()
         {
+            _soundManager.Update();
             ActorRenderer.Update();
             ActorManager.Update();
         }
@@ -677,6 +747,7 @@ namespace DaveTheMonitor.Core
             {
                 if (disposing)
                 {
+                    _soundManager.Dispose();
                     ActorRenderer.Dispose();
                 }
 
@@ -711,6 +782,7 @@ namespace DaveTheMonitor.Core
             }
             _data = new CoreDataCollection<ICoreWorld>(this);
             ActorRenderer = new ActorRenderer();
+            _soundManager = new SoundManager();
         }
     }
 }

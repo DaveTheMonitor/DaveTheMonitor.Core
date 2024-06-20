@@ -3,12 +3,15 @@ using DaveTheMonitor.Core.Animation.Json;
 using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Assets;
 using DaveTheMonitor.Core.Assets.Loaders;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.Engine;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace DaveTheMonitor.Core
 {
@@ -114,6 +117,16 @@ namespace DaveTheMonitor.Core
         }
 
         /// <summary>
+        /// Loads a sound effect asset. Sound effect assets must be in the "Sounds" folder, and must be a wave file.
+        /// </summary>
+        /// <param name="name">The name of the asset to load.</param>
+        /// <returns>The sound loaded, or null if it doesn't exist.</returns>
+        public SoundEffect LoadSound(string name)
+        {
+            return LoadAsset<CoreSoundAsset>("Sounds/" + name)?.Sound;
+        }
+
+        /// <summary>
         /// Loads an asset from this mod.
         /// </summary>
         /// <typeparam name="T">The type of asset to load.</typeparam>
@@ -146,9 +159,18 @@ namespace DaveTheMonitor.Core
                 return null;
             }
 
-            info.Asset = loader.Load(info.Path, name, _mod);
-            _assets[name] = info;
-            return info.Asset;
+            try
+            {
+                info.Asset = loader.Load(info.Path, name, _mod);
+                _assets[name] = info;
+                return info.Asset;
+            }
+            catch (Exception ex)
+            {
+                Debugger.Break();
+                Debug.WriteLine(ex);
+                return null;
+            }
         }
 
         /// <summary>
@@ -200,10 +222,26 @@ namespace DaveTheMonitor.Core
                 return;
             }
 
-            EachFile(fullPath, filter, (path, name) =>
+
+            if (!filter.Contains('|'))
             {
-                _assets.Add(name, new AssetInfo(path, assetType));
+                EachFile(fullPath, filter, (path, name) =>
+                {
+                    _assets.Add(name, new AssetInfo(path, assetType));
+                });
+                return;
+            }
+
+            string[] patterns = filter.Split('|');
+            EachFile(fullPath, "*", (path, name) =>
+            {
+                if (patterns.Contains(Path.GetExtension(path)))
+                {
+                    _assets.Add(name, new AssetInfo(path, assetType));
+                }
             });
+
+            return;
         }
 
         private void EachFile(string path, string filter, Action<string, string> action)
