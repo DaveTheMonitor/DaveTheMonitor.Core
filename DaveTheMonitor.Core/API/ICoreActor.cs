@@ -1,4 +1,5 @@
-﻿using DaveTheMonitor.Core.Events;
+﻿using DaveTheMonitor.Core.Animation;
+using DaveTheMonitor.Core.Events;
 using DaveTheMonitor.Scripts;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -192,9 +193,9 @@ namespace DaveTheMonitor.Core.API
         bool IsPlayer { get; }
 
         /// <summary>
-        /// True if this actor is on the ground.
+        /// True if this actor is on the ground with no coyote time. Due to a TM bug, this may switch between true and false for a few frames after touching the ground. Using <see cref="IsOnGround(float)"/> will avoid this.
         /// </summary>
-        bool IsOnGround { get; }
+        bool Grounded { get; }
 
         /// <summary>
         /// True if this actor is crouching.
@@ -205,6 +206,16 @@ namespace DaveTheMonitor.Core.API
         /// True if this actor is current active in the world.
         /// </summary>
         bool IsActive { get; }
+
+        /// <summary>
+        /// Custom actor model for use with rigidbody animations. This may be null if the actor does not have a custom model and instead uses a vanilla model.
+        /// </summary>
+        ActorModel Model { get; }
+
+        /// <summary>
+        /// The animation state machine for this actor.
+        /// </summary>
+        AnimationController Animation { get; }
 
         /// <summary>
         /// Called when this actor is attacked.
@@ -504,5 +515,25 @@ namespace DaveTheMonitor.Core.API
         /// <param name="hand">The hand that is swinging.</param>
         /// <param name="item">The item being swung.</param>
         void OnSwingEnd(ICoreHand hand, CoreItem item);
+
+        /// <summary>
+        /// <para>Plays the specified animation state for this actor, cancelling the current animation.</para>
+        /// <para>The animation state must exist on the animation controller.</para>
+        /// </summary>
+        /// <param name="id">The ID of the animation to play.</param>
+        /// <returns>True if the animation is started successfully, otherwise false.</returns>
+        bool PlayAnimation(string id);
+
+        /// <summary>
+        /// Tests if the actor is on the ground with coyote time.
+        /// </summary>
+        /// <param name="time">The coyote time, in seconds.</param>
+        /// <returns>True if the actor is on the ground, otherwise false.</returns>
+        bool IsOnGround(float time);
+
+        /// <summary>
+        /// Called every frame.
+        /// </summary>
+        void Update();
     }
 }

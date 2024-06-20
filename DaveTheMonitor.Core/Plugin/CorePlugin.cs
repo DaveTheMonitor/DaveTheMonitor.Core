@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Components;
+using DaveTheMonitor.Core.Json;
 using DaveTheMonitor.Core.Patches;
 using DaveTheMonitor.Scripts;
 using DaveTheMonitor.Scripts.Compiler;
@@ -86,6 +87,7 @@ namespace DaveTheMonitor.Core.Plugin
         /// </summary>
         public void Draw(ITMPlayer player, ITMPlayer virtualPlayer, Viewport vp)
         {
+            ((CoreWorld)_game._currentWorld).ActorRenderer.Draw(_game.GetPlayer(player), virtualPlayer);
             _game.ModManager.ModDraw(_game.GetPlayer(player), virtualPlayer, vp);
         }
 
@@ -103,7 +105,7 @@ namespace DaveTheMonitor.Core.Plugin
         /// </summary>
         public void Initialize(ITMPluginManager mgr, ITMMod mod)
         {
-            GlobalData.Initialize(Path.Combine(mod.FullPath, ModManager.ContentPath));
+            CoreGlobalData.Initialize(Path.Combine(mod.FullPath, ModManager.ContentPath));
             _itemOffset = mgr.Offsets.ItemID;
             TMMod = mod;
             Instance = this;
@@ -116,15 +118,19 @@ namespace DaveTheMonitor.Core.Plugin
         /// </summary>
         public void InitializeGame(ITMGame game)
         {
+            JsonCondition.RegisterConditionTypes(Assembly.GetExecutingAssembly());
             Component.RegisterComponents(Assembly.GetExecutingAssembly());
             _game = new CoreGame(game);
-            _game.ModManager.EnableAll(_game.ModManager.LoadAll(game.GetActiveMods()));
-            CoreMod = _game.ModManager.GetMod(TMMod.ID);
+            CoreMod = _game.ModManager.LoadMod(TMMod, Path.Combine(TMMod.FullPath, ModManager.ContentPath));
+            _game.ModManager.EnableMod(CoreMod);
+            ((CoreWorld)_game._currentWorld).ActorRenderer.LoadContent();
 
             string modulesPath = Path.Combine(TMMod.FullPath, "Modules");
             _game.ModManager.EnableMod(_game.ModManager.LoadMod(TMMod, Path.Combine(modulesPath, "Particles")));
             _game.ModManager.EnableMod(_game.ModManager.LoadMod(TMMod, Path.Combine(modulesPath, "Effects")));
             //_game.ModManager.EnableMod(_game.ModManager.LoadMod(Mod, Path.Combine(modulesPath, "Biomes")));
+            _game.ModManager.EnableAll(_game.ModManager.LoadAll(game.GetActiveMods()));
+            _game.AllModsLoaded();
 
             _game.ItemRegistry.InitializeAllItems(Globals1.ItemData);
             _game.ItemRegistry.RegisterAllJson<CoreItem>(_game.ModManager.GetAllActiveMods(), "Items");
@@ -154,8 +160,6 @@ namespace DaveTheMonitor.Core.Plugin
             }
 
             ScriptType.RegisterTypes(assemblies);
-            ScriptType[] types = ScriptType.GetAllTypes();
-            List<ScriptMethod> methods = ScriptMethod.GetStaticMethods(new List<string>() { "scripts", "totalminer" }, "print");
 
             ScriptRuntime runtime = new ScriptRuntime(1024, 1024, 128);
             runtime.PrintHandler += ScriptPrintHandler;
@@ -287,14 +291,13 @@ namespace DaveTheMonitor.Core.Plugin
         {
             string path = _game.FullPath;
             string corePath = Path.Combine(path, "coredata.dat");
-            int coreVersion = 0;
 
             if (Game.ShouldSaveState() || File.Exists(corePath))
             {
                 using Stream stream = File.Create(corePath);
                 using BinaryWriter writer = new BinaryWriter(stream);
                 writer.Write(version);
-                writer.Write(coreVersion);
+                writer.Write(CoreGlobalData.CoreSaveVersion);
                 Game.WriteState(writer);
             }
         }

@@ -24,6 +24,8 @@ namespace DaveTheMonitor.Core
         private List<ICoreActor> _actorsList;
         private List<ICorePlayer> _playersList;
         private Dictionary<ulong, ICoreActor> _actors;
+        private List<ITMActor> _actorsToAdd;
+        private List<ITMActor> _actorsToRemove;
 
         public ICoreActor GetActor(ITMActor actor)
         {
@@ -104,54 +106,97 @@ namespace DaveTheMonitor.Core
             return _actors.TryGetValue(((IActorBehaviour)actor).GamerID.ID, out ICoreActor a) && a.IsActive;
         }
 
+        public void Update()
+        {
+            lock (_actorsToAdd)
+            {
+                foreach (ITMActor tmActor in _actorsToAdd)
+                {
+                    GamerID id = ((IActorBehaviour)tmActor).GamerID;
+                    if (_actors.ContainsKey(id.ID))
+                    {
+#if DEBUG
+                        CorePlugin.Warn($"Actor {tmActor.ActorType} already added: {id}");
+#endif
+                        continue;
+                    }
+
+                    Actor actor = tmActor is ITMPlayer player ? new Player(_game, _world, player) : new NPC(_game, _world, tmActor);
+                    _actors.Add(actor.Id.ID, actor);
+                    _actorsList.Add(actor);
+                    _game.InitializeDefaultData(actor);
+                    Raise_ActorAdded(actor);
+
+                    if (actor is Player p)
+                    {
+                        _game.LoadPlayerState(p);
+                    }
+#if DEBUG
+                    CorePlugin.Log($"Actor {actor.CoreActor.Id} added: {actor.Id}");
+#endif
+                }
+                _actorsToAdd.Clear();
+            }
+
+            lock (_actorsToRemove)
+            {
+                foreach (ITMActor tmActor in _actorsToRemove)
+                {
+                    GamerID id = ((IActorBehaviour)tmActor).GamerID;
+
+                    bool removed = _actors.Remove(id.ID, out ICoreActor newActor);
+                    if (removed)
+                    {
+                        _actorsList.Remove(newActor);
+                        Raise_ActorRemoved(newActor);
+                    }
+
+#if DEBUG
+                    if (removed)
+                    {
+                        CorePlugin.Log($"Actor {tmActor.ActorType} removed: {id}");
+                    }
+                    else
+                    {
+                        CorePlugin.Warn($"Actor {tmActor.ActorType} removal failed: {id}");
+                    }
+#endif
+                }
+                _actorsToRemove.Clear();
+            }
+
+            foreach (ICoreActor actor in _actorsList)
+            {
+                actor.Update();
+            }
+        }
+
         public bool AddActor(ITMActor actor)
         {
+            lock (_actorsToAdd)
+            {
+                _actorsToAdd.Add(actor);
+            }
+
+#if DEBUG
             GamerID id = ((IActorBehaviour)actor).GamerID;
-            if (_actors.ContainsKey(((IActorBehaviour)actor).GamerID.ID))
-            {
-#if DEBUG
-                CorePlugin.Warn($"Actor {actor.ActorType} already added: {id}");
-#endif
-                return false;
-            }
-
-            Actor newActor = actor is ITMPlayer player ? new Player(_game, _world, player) : new NPC(_game, _world, actor);
-            _actors.Add(id.ID, newActor);
-            _actorsList.Add(newActor);
-            Raise_ActorAdded(newActor);
-
-            if (newActor is Player p)
-            {
-                _game.LoadPlayerState(p);
-            }
-#if DEBUG
-            CorePlugin.Log($"Actor {actor.ActorType} added: {id}");
+            CorePlugin.Log($"Actor {actor.ActorType} queued for addition: {id}");
 #endif
             return true;
         }
 
         public bool RemoveActor(ITMActor actor)
         {
-            GamerID id = ((IActorBehaviour)actor).GamerID;
-
-            bool removed = _actors.Remove(id.ID, out ICoreActor newActor);
-            if (removed)
+            lock (_actorsToRemove)
             {
-                _actorsList.Remove(newActor);
-                Raise_ActorRemoved(newActor);
+                _actorsToRemove.Add(actor);
             }
 
 #if DEBUG
-            if (removed)
-            {
-                CorePlugin.Log($"Actor {actor.ActorType} removed: {id}");
-            }
-            else
-            {
-                CorePlugin.Warn($"Actor {actor.ActorType} removal failed: {id}");
-            }
-#endif            
-            return removed;
+            GamerID id = ((IActorBehaviour)actor).GamerID;
+            CorePlugin.Log($"Actor {actor.ActorType} queued for removal: {id}");
+#endif
+            return true;
         }
 
         private void Raise_ActorAdded(ICoreActor actor)
@@ -177,6 +222,8 @@ namespace DaveTheMonitor.Core
             _world = world;
             _actors = new Dictionary<ulong, ICoreActor>();
             _actorsList = new List<ICoreActor>();
+            _actorsToAdd = new List<ITMActor>();
+            _actorsToRemove = new List<ITMActor>();
         }
     }
 }

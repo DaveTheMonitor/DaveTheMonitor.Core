@@ -90,11 +90,11 @@ namespace DaveTheMonitor.Core.Effects
             var display = components.GetComponent<EffectDisplayComponent>();
             if (display.Background != null)
             {
-                _background = Game.ModManager.GetTexture(mod, display.Background, 16);
+                _background = Game.ModManager.LoadTexture(mod, display.Background);
             }
             if (display.Icon != null)
             {
-                _icon = Game.ModManager.GetTexture(mod, display.Icon, 16);
+                _icon = Game.ModManager.LoadTexture(mod, display.Icon);
             }
         }
 
@@ -125,7 +125,7 @@ namespace DaveTheMonitor.Core.Effects
         private void EmitParticles(ActorEffect effect)
         {
             float freq = GetParticleFrequency(effect);
-            ActorEffectParticleData data = effect.GetData<ActorEffectParticleData>(_mod);
+            ActorEffectParticleData data = effect.GetData<ActorEffectParticleData>();
             double totalEmitted = data.TotalEmitted;
             double prev = totalEmitted;
             totalEmitted += freq * Services.ElapsedTime;
@@ -207,7 +207,7 @@ namespace DaveTheMonitor.Core.Effects
         {
             if (Particle != null)
             {
-                effect.SetDefaultData<ActorEffectParticleData>(_mod);
+                effect.SetDefaultData<ActorEffectParticleData>();
             }
         }
 

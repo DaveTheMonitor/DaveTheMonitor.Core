@@ -61,7 +61,7 @@ namespace DaveTheMonitor.Core.Biomes
             var mapComponent = components.HasComponent<DecorationMapComponentComponent>() ? MapComponent : null;
             if (mapComponent != null)
             {
-                CoreMapAsset asset = Game.ModManager.GetAsset<CoreMapAsset>(mod, $"Components/{mapComponent.ComponentId}");
+                CoreMapAsset asset = Game.ModManager.LoadAsset<CoreMapAsset>(mod, $"Components/{mapComponent.ComponentId}");
                 if (asset == null)
                 {
                     return;

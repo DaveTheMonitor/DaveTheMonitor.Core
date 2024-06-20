@@ -27,17 +27,8 @@ namespace DaveTheMonitor.Core.Effects
         {
             _game = game;
             ActorEffectRegistry registry = new ActorEffectRegistry(game);
-            game.SetDefaultData<EffectGameData>(Mod).SetRegister(registry);
-            foreach (ICoreWorld world in game.GetAllWorlds())
-            {
-                world.ActorManager.ActorAdded += ActorAdded;
-            }
+            game.SetDefaultData<EffectGameData>().SetRegistry(registry);
             registry.RegisterAllTypesAndJson<JsonActorEffect>(game.ModManager.GetAllActiveMods(), "Effects");
-        }
-
-        private void ActorAdded(object sender, CoreActorEventArgs e)
-        {
-            e.Actor.SetDefaultData<EffectData>(Mod);
         }
 
         public bool HandleInput(ICorePlayer player)
@@ -53,14 +44,12 @@ namespace DaveTheMonitor.Core.Effects
 
         public void Update(ICoreActor actor)
         {
-            EffectData data = actor.GetData<EffectData>(Mod);
-            data.Update();
+            actor.Effects().Update();
         }
 
         public void Draw(ICorePlayer player, ITMPlayer virtualPlayer, Viewport vp)
         {
-            ICorePlayer virt = player.World.ActorManager.GetPlayer(virtualPlayer);
-            if (virt != null)
+            if (_game.TryGetPlayer(virtualPlayer, out ICorePlayer virt))
             {
                 EffectData data = virt.Effects();
                 int i = 0;

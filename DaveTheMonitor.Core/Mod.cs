@@ -26,121 +26,17 @@ namespace DaveTheMonitor.Core
         public ModVersion Version { get; private set; }
         public EnumTypeOffsets TypeOffsets { get; private set; }
         public Assembly Assembly { get; private set; }
-        public ContentManager MGContent { get; private set; }
+        public ModContentManager Content { get; private set; }
+        public ICoreModManager ModManager { get; private set; }
         private CoreAssemblyLoadContext _loadContext;
         private Dictionary<string, CoreModAsset> _assets;
+        private Dictionary<string, string> _assetPaths;
         private bool _disposedValue;
 
-        public void Load(ModInfo info, IMapComponentLoader componentLoader)
+        public void Load(ModInfo info)
         {
-            LoadAllContent(info, componentLoader);
-        }
-
-        private void LoadAllContent(ModInfo info, IMapComponentLoader componentLoader)
-        {
-            if (_assets.Count != 0)
-            {
-                foreach (CoreModAsset value in _assets.Values)
-                {
-                    value.Dispose();
-                }
-                _assets.Clear();
-            }
-            LoadTextures(_assets);
-            LoadComponents(_assets, componentLoader);
-            string path = Path.Combine(FullPath, "MGContent");
-            if (Directory.Exists(path))
-            {
-                MGContent = new ContentManager(CoreGlobals.Content.ServiceProvider, Path.Combine(FullPath, "MGContent"));
-            }
+            Content = new ModContentManager(FullPath, ModManager, this);
             LoadPlugin(info);
-        }
-
-        private void LoadTextures(Dictionary<string, CoreModAsset> dictionary)
-        {
-            EachFile(Path.Combine(FullPath, "Textures"), "*.png", (string file, string relative) =>
-            {
-                Texture2D texture = Texture2D.FromFile(CoreGlobals.GraphicsDevice, file);
-                dictionary.Add(relative, new CoreTextureAsset(file, texture));
-            });
-        }
-
-        private void LoadComponents(Dictionary<string, CoreModAsset> dictionary, IMapComponentLoader componentLoader)
-        {
-            EachFile(Path.Combine(FullPath, "Components"), "*.com", (string file, string relative) =>
-            {
-                ITMMap map = componentLoader.LoadComponent(file);
-                dictionary.Add(relative, new CoreMapAsset(file, new CoreMap(map)));
-            });
-        }
-
-        private void EachFile(string path, string filter, Action<string, string> action)
-        {
-            if (!Directory.Exists(path))
-            {
-                return;
-            }
-
-            string[] files = Directory.GetFiles(path, filter, SearchOption.AllDirectories);
-
-            foreach (string file in files)
-            {
-                string relative = Path.GetRelativePath(FullPath, file).Replace('\\', '/');
-                relative = relative.Substring(0, relative.LastIndexOf('.'));
-                action(file, relative);
-            }
-        }
-
-        public CoreModAsset GetAsset(string name)
-        {
-            if (name == null)
-            {
-                return null;
-            }
-
-            _assets.TryGetValue(name, out CoreModAsset asset);
-            return asset;
-        }
-
-        public T GetAsset<T>(string name) where T : CoreModAsset
-        {
-            if (name == null)
-            {
-                return default(T);
-            }
-
-            if (_assets.TryGetValue(name, out CoreModAsset asset) && asset is T t)
-            {
-                return t;
-            }
-            return default(T);
-        }
-
-        public Texture2D GetTexture(string name, int size)
-        {
-            CoreTextureAsset asset = GetAsset<CoreTextureAsset>($"Textures/{name}");
-            if (asset != null)
-            {
-                return asset.Texture;
-            }
-
-            return size switch
-            {
-                16 => GlobalData.MissingTexture16,
-                32 => GlobalData.MissingTexture32,
-                64 => GlobalData.MissingTexture64,
-                _ => null
-            };
-        }
-
-        public ICoreMap GetComponent(string name)
-        {
-            return GetAsset<CoreMapAsset>($"Components/{name}")?.Map;
-        }
-
-        public string GetFullPathToAsset(string name)
-        {
-            return GetAsset(name)?.FullPath;
         }
 
         private void LoadPlugin(ModInfo info)
@@ -205,11 +101,7 @@ namespace DaveTheMonitor.Core
             {
                 if (disposing)
                 {
-                    MGContent?.Dispose();
-                    foreach (CoreModAsset asset in _assets.Values)
-                    {
-                        asset.Dispose();
-                    }
+                    Content?.Dispose();
                 }
 
                 _disposedValue = true;
@@ -224,7 +116,7 @@ namespace DaveTheMonitor.Core
 
         #endregion
 
-        public Mod(string path, ModInfo info, ITMMod mod, ModType type)
+        public Mod(string path, ModInfo info, ITMMod mod, ModType type, ICoreModManager modManager)
         {
             FullPath = path;
             Id = info.Id;
@@ -234,6 +126,7 @@ namespace DaveTheMonitor.Core
             Version = DeserializationHelper.TryParseModVersion(info.Version, out ModVersion result) ? result : new ModVersion(1, 0, 0);
             TypeOffsets = Traverse.Create(mod).Field("typeOffsets").GetValue<EnumTypeOffsets>();
             _assets = new Dictionary<string, CoreModAsset>();
+            ModManager = modManager;
         }
     }
 }

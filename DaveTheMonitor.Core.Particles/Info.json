@@ -1,0 +1,5 @@
+﻿{
+    "ID": "Core.Particles",
+    "Version": "0.1.3",
+    "Plugin": "DaveTheMonitor.Core.Particles.dll"
+}

@@ -83,7 +83,7 @@ namespace DaveTheMonitor.Core.Helpers
 
             VerifyType(invokerReturn);
             VerifyType(methodReturn);
-            VerifyConversion(invokerReturn, methodReturn);
+            VerifyConversion(methodReturn, invokerReturn);
             for (int i = 0; i < invokerParams.Length; i++)
             {
                 Type invokerType = invokerParams[i];
@@ -98,7 +98,7 @@ namespace DaveTheMonitor.Core.Helpers
         {
             if (type.IsByRef)
             {
-                throw new InvalidOperationException("MethodInvoker does not support by ref");
+                throw new InvalidOperationException("MethodInvoker does not support by ref, if the arguments are known at compile time, use MethodInfo.CreateDelegate, otherwise use a Harmony reverse patch.");
             }
         }
 

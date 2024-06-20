@@ -13,7 +13,7 @@ namespace DaveTheMonitor.Core.Particles
             
         }
 
-        public void SetRegister(ParticleRegistry registry)
+        public void SetRegistry(ParticleRegistry registry)
         {
             ParticleRegistry = registry;
         }

@@ -1,8 +1,14 @@
-﻿using DaveTheMonitor.Core.API;
+﻿using DaveTheMonitor.Core.Animation;
+using DaveTheMonitor.Core.Animation.Json;
+using DaveTheMonitor.Core.API;
+using DaveTheMonitor.Core.Assets;
 using DaveTheMonitor.Core.Components;
+using DaveTheMonitor.Core.Components.Actors;
 using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Plugin;
 using StudioForge.TotalMiner;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -18,7 +24,7 @@ namespace DaveTheMonitor.Core
         public int NumId { get => (int)ActorType; set => ActorType = (ActorType)value; }
 
         /// <summary>
-        /// The <see cref="ActorType"/> of this actor.
+        /// The <see cref="StudioForge.TotalMiner.ActorType"/> of this actor.
         /// </summary>
         public ActorType ActorType { get; private set; }
 
@@ -67,6 +73,14 @@ namespace DaveTheMonitor.Core
         /// <remarks>This may be null.</remarks>
         public ActorCombatComponent Combat { get; private set; }
 
+        public ActorModelComponent ModelComponent { get; private set; }
+
+        public ActorModel Model { get; private set; }
+
+        public ActorAnimationControllerComponent AnimationControllerComponent { get; private set; }
+
+        public JsonAnimationController AnimationController { get; private set; }
+
         /// <summary>
         /// True if this actor is immune to fire, otherwise false.
         /// </summary>
@@ -112,7 +126,15 @@ namespace DaveTheMonitor.Core
 
         private void LoadAssets(ICoreMod mod, ComponentCollection components)
         {
-            
+            ICoreModManager modManager = CorePlugin.Instance.Game.ModManager;
+            if (components.TryGetComponent(out ActorModelComponent model))
+            {
+                Model = modManager.LoadActorModel(mod, model.ModelName);
+            }
+            if (components.TryGetComponent(out ActorAnimationControllerComponent animationController))
+            {
+                AnimationController = modManager.LoadAnimationController(mod, animationController.ControllerName);
+            }
         }
 
         private void UpdateFields()

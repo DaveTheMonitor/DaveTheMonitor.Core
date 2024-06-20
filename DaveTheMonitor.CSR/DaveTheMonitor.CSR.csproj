@@ -10,11 +10,14 @@
   <ItemGroup>
     <ProjectReference Include="..\DaveTheMonitor.Core.Biomes\DaveTheMonitor.Core.Biomes.csproj" />
     <ProjectReference Include="..\DaveTheMonitor.Core.Effects\DaveTheMonitor.Core.Effects.csproj" />
-    <ProjectReference Include="..\DaveTheMonitor.Core.Loader\DaveTheMonitor.Core.Loader.csproj" />
     <ProjectReference Include="..\DaveTheMonitor.Core.Particles\DaveTheMonitor.Core.Particles.csproj" />
     <ProjectReference Include="..\DaveTheMonitor.Core\DaveTheMonitor.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="DaveTheMonitor.Scripts">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\DaveTheMonitor.Scripts.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="StudioForge.BlockWorld">
       <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.BlockWorld.dll</HintPath>
       <Private>false</Private>

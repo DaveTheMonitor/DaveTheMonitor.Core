@@ -13,7 +13,7 @@ namespace DaveTheMonitor.Core.Effects
             
         }
 
-        public void SetRegister(ActorEffectRegistry registry)
+        public void SetRegistry(ActorEffectRegistry registry)
         {
             EffectRegistry = registry;
         }

@@ -20,7 +20,7 @@ namespace DaveTheMonitor.Core.Biomes
 
         public override void OnRegister(ICoreMod mod)
         {
-            _component = Game.ModManager.GetComponent(mod, _comId).TMMap;
+            _component = Game.ModManager.LoadComponent(mod, _comId).TMMap;
         }
 
         public BasicDecoration(string id, string component, bool canRotate, GlobalPoint3D origin, Map.CopyType copyType)

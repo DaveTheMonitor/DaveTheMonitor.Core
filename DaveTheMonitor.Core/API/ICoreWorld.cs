@@ -169,6 +169,11 @@ namespace DaveTheMonitor.Core.API
         float WindFactor { get; }
 
         /// <summary>
+        /// The actor renderer for this world used to render actors with custom models.
+        /// </summary>
+        ICoreActorRenderer ActorRenderer { get; }
+
+        /// <summary>
         /// Get the <see cref="BoundingBox"/> of the block at the specified position.
         /// </summary>
         /// <param name="p">The position of the block.</param>
@@ -385,6 +390,11 @@ namespace DaveTheMonitor.Core.API
         /// <para>This method doesn't do anything if the Particles Module is not active.</para>
         /// </remarks>
         void DestroyParticle(object particle);
+        
+        /// <summary>
+        /// Called every frame.
+        /// </summary>
+        void Update();
 
         /// <summary>
         /// Returns true if this world has any state to save.

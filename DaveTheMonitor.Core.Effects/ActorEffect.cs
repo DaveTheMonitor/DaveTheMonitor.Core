@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using StudioForge.Engine;
+using System.Collections.Generic;
 using System.IO;
 
 namespace DaveTheMonitor.Core.Effects
@@ -40,25 +41,74 @@ namespace DaveTheMonitor.Core.Effects
             Age += Services.ElapsedTime;
         }
 
-        public T GetData<T>(ICoreMod mod) where T : ICoreData<ActorEffect>
+        public T GetData<T>() where T : ICoreData<ActorEffect>
         {
             if (_data == null)
             {
                 return default(T);
             }
-            return _data.GetData<T>(mod);
+            return _data.GetData<T>();
         }
 
-        public void SetData(ICoreMod mod, ICoreData<ActorEffect> data)
+        public bool TryGetData<T>(out T result) where T : ICoreData<ActorEffect>
         {
-            _data ??= new CoreDataCollection<ActorEffect>(this);
-            _data.SetData(mod, data);
+            if (_data == null)
+            {
+                result = default(T);
+                return false;
+            }
+            return _data.TryGetData(out result);
         }
 
-        public T SetDefaultData<T>(ICoreMod mod) where T : ICoreData<ActorEffect>, new()
+        public void GetAllData(List<ICoreData<ActorEffect>> result)
+        {
+            if (_data == null)
+            {
+                result.Clear();
+                return;
+            }
+            _data.GetAllData(result);
+        }
+
+        public bool HasData<T>()
+        {
+            return _data?.HasData<T>() ?? false;
+        }
+
+        public void SetData(ICoreData<ActorEffect> data)
         {
             _data ??= new CoreDataCollection<ActorEffect>(this);
-            return _data.SetDefaultData<T>(mod);
+            _data.SetData(data);
+        }
+
+        public void SetData<T>(T data) where T : ICoreData<ActorEffect>
+        {
+            _data ??= new CoreDataCollection<ActorEffect>(this);
+            _data.SetData(data);
+        }
+
+        public T SetData<T>() where T : ICoreData<ActorEffect>, new()
+        {
+            _data ??= new CoreDataCollection<ActorEffect>(this);
+            return _data.SetData<T>();
+        }
+
+        public ICoreData<ActorEffect> SetDefaultData(ICoreData<ActorEffect> data)
+        {
+            _data ??= new CoreDataCollection<ActorEffect>(this);
+            return _data.SetDefaultData(data);
+        }
+
+        public T SetDefaultData<T>(T data) where T : ICoreData<ActorEffect>
+        {
+            _data ??= new CoreDataCollection<ActorEffect>(this);
+            return _data.SetDefaultData(data);
+        }
+
+        public T SetDefaultData<T>() where T : ICoreData<ActorEffect>, new()
+        {
+            _data ??= new CoreDataCollection<ActorEffect>(this);
+            return _data.SetDefaultData<T>();
         }
 
         public void ReadState(BinaryReader reader, int tmVersion, int coreVersion)

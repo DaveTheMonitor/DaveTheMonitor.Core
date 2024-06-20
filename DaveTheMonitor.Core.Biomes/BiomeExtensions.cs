@@ -6,22 +6,22 @@ namespace DaveTheMonitor.Core.Biomes
     {
         public static BiomeRegistry BiomeRegistry(this ICoreGame game)
         {
-            return game.GetData<BiomeGameData>(BiomesPlugin.Instance.Mod).BiomeRegistry;
+            return game.GetData<BiomeGameData>().BiomeRegistry;
         }
 
         public static DecorationRegistry DecorationRegistry(this ICoreGame game)
         {
-            return game.GetData<BiomeGameData>(BiomesPlugin.Instance.Mod).DecorationRegistry;
+            return game.GetData<BiomeGameData>().DecorationRegistry;
         }
 
         public static BiomeManager BiomeManager(this ICoreWorld world)
         {
-            return world.GetData<BiomeWorldData>(BiomesPlugin.Instance.Mod).BiomeManager;
+            return world.GetData<BiomeWorldData>().BiomeManager;
         }
 
         public static BiomeActorData BiomeData(this ICoreActor actor)
         {
-            return actor.GetData<BiomeActorData>(BiomesPlugin.Instance.Mod);
+            return actor.GetData<BiomeActorData>();
         }
 
         public static Biome CurrentBiome(this ICoreActor actor)

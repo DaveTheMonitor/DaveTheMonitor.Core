@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Components;
+using DaveTheMonitor.Core.Components.Items;
 using DaveTheMonitor.Core.Helpers;
 using DaveTheMonitor.Core.Plugin;
 using Microsoft.Xna.Framework;
@@ -156,10 +157,10 @@ namespace DaveTheMonitor.Core
             if (textureComponent != null)
             {
                 int hdSize = IsBlock ? 64 : 32;
-                TextureHD = Game.ModManager.GetTexture(mod, textureComponent.HD, hdSize);
+                TextureHD = Game.ModManager.LoadTexture(mod, textureComponent.HD, false) ?? (IsBlock ? CoreGlobalData.MissingTexture64 : CoreGlobalData.MissingTexture32);
                 TextureHDSrc = new Rectangle(0, 0, hdSize, hdSize);
 
-                TextureSD = Game.ModManager.GetTexture(mod, textureComponent.SD, 16);
+                TextureSD = Game.ModManager.LoadTexture(mod, textureComponent.SD, false) ?? CoreGlobalData.MissingTexture16;
                 TextureSDSrc = new Rectangle(0, 0, 16, 16);
             }
         }

@@ -6,12 +6,12 @@ namespace DaveTheMonitor.Core.Effects
     {
         public static EffectData Effects(this ICoreActor actor)
         {
-            return actor.GetData<EffectData>(EffectsPlugin.Instance.Mod);
+            return actor.GetData<EffectData>();
         }
 
         public static ActorEffectRegistry EffectRegistry(this ICoreGame game)
         {
-            return game.GetData<EffectGameData>(EffectsPlugin.Instance.Mod).EffectRegistry;
+            return game.GetData<EffectGameData>().EffectRegistry;
         }
     }
 }

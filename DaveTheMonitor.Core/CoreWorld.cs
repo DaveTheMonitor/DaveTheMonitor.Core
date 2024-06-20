@@ -1,5 +1,7 @@
-﻿using DaveTheMonitor.Core.API;
+﻿using DaveTheMonitor.Core.Animation;
+using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Core.Scripts;
 using DaveTheMonitor.Scripts;
 using DaveTheMonitor.Scripts.Attributes;
@@ -25,6 +27,7 @@ namespace DaveTheMonitor.Core
         public ICoreActorManager ActorManager => _actorManager;
         public ITMEntityManager TMEntityManager => TMWorld.EntityManager;
         public ITMEnvManager TMEnvironmentManager => TMWorld.EnvironManager;
+        public ICoreActorRenderer ActorRenderer => _actorRenderer;
         public GameMode GameMode => TMWorld.GameMode;
         public GameDifficulty Difficulty => TMWorld.Difficulty;
         public bool IsCreativeMode => TMWorld.IsCreativeMode;
@@ -50,6 +53,7 @@ namespace DaveTheMonitor.Core
         private ActorManager _actorManager;
         private CoreMap _map;
         private CoreDataCollection<ICoreWorld> _data;
+        private ActorRenderer _actorRenderer;
 
         #region Scripts
 
@@ -625,20 +629,22 @@ namespace DaveTheMonitor.Core
             TMWorld.TeleportEntities(min, max, dest, relative);
         }
 
-        public T GetData<T>(ICoreMod mod) where T : ICoreData<ICoreWorld>
+        public void Update()
         {
-            return _data.GetData<T>(mod);
+            _actorRenderer.Update();
+            ActorManager.Update();
         }
 
-        public void SetData(ICoreMod mod, ICoreData<ICoreWorld> data)
-        {
-            _data.SetData(mod, data);
-        }
-
-        public T SetDefaultData<T>(ICoreMod mod) where T : ICoreData<ICoreWorld>, new()
-        {
-            return _data.SetDefaultData<T>(mod);
-        }
+        public T GetData<T>() where T : ICoreData<ICoreWorld> => _data.GetData<T>();
+        public bool TryGetData<T>(out T result) where T : ICoreData<ICoreWorld> => _data.TryGetData(out result);
+        public void GetAllData(List<ICoreData<ICoreWorld>> result) => _data.GetAllData(result);
+        public bool HasData<T>() => _data.HasData<T>();
+        public void SetData(ICoreData<ICoreWorld> data) => _data.SetData(data);
+        public void SetData<T>(T data) where T : ICoreData<ICoreWorld> => _data.SetData(data);
+        public T SetData<T>() where T : ICoreData<ICoreWorld>, new() => _data.SetData<T>();
+        public ICoreData<ICoreWorld> SetDefaultData(ICoreData<ICoreWorld> data) => _data.SetDefaultData(data);
+        public T SetDefaultData<T>(T data) where T : ICoreData<ICoreWorld> => _data.SetDefaultData(data);
+        public T SetDefaultData<T>() where T : ICoreData<ICoreWorld>, new() => _data.SetDefaultData<T>();
 
         public void ReadState(BinaryReader reader, int tmVersion, int coreVersion)
         {
@@ -682,6 +688,7 @@ namespace DaveTheMonitor.Core
                 FullPath = Path.Combine(FileSystem.RootPath, path);
             }
             _data = new CoreDataCollection<ICoreWorld>(this);
+            _actorRenderer = new ActorRenderer();
         }
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StudioForge.BlockWorld;
 using StudioForge.Engine;
 using StudioForge.Engine.Core;
+using StudioForge.Engine.GamerServices;
 using StudioForge.Engine.GUI;
 using StudioForge.Engine.Integration;
 using StudioForge.TotalMiner;
@@ -190,8 +191,23 @@ namespace DaveTheMonitor.Core.API
         /// Gets the <see cref="ICorePlayer"/> for the specified <see cref="ITMPlayer"/>.
         /// </summary>
         /// <param name="player">The player to get.</param>
-        /// <returns>The <see cref="ICorePlayer"/> for the specified <see cref="ITMPlayer"/>.</returns>
+        /// <returns>The <see cref="ICorePlayer"/> for the specified <see cref="ITMPlayer"/>, or null if they don't exist (eg. CCTV).</returns>
         ICorePlayer GetPlayer(ITMPlayer player);
+
+        /// <summary>
+        /// Gets the <see cref="ICorePlayer"/> with the specified <see cref="GamerID"/>.
+        /// </summary>
+        /// <param name="id">The ID of the player to get.</param>
+        /// <returns>The <see cref="ICorePlayer"/> with the specified <see cref="GamerID"/>, or null if they don't exist.</returns>
+        ICorePlayer GetPlayer(GamerID id);
+
+        /// <summary>
+        /// Sets <paramref name="result"/> to the <see cref="ICorePlayer"/> for the specified <see cref="ITMPlayer"/> if they exist, or null if they don't exist (eg. CCTV).
+        /// </summary>
+        /// <param name="player">The player to get.</param>
+        /// <param name="result">The <see cref="ICorePlayer"/> result for the specified player.</param>
+        /// <returns>True if the player exists, otherwise false.</returns>
+        bool TryGetPlayer(ITMPlayer player, out ICorePlayer result);
 
         /// <summary>
         /// Gets the <see cref="ICoreActor"/> for the specified <see cref="ITMActor"/>.
@@ -199,6 +215,22 @@ namespace DaveTheMonitor.Core.API
         /// <param name="actor">The actor to get.</param>
         /// <returns>The <see cref="ICoreActor"/> for the specified <see cref="ITMActor"/>.</returns>
         ICoreActor GetActor(ITMActor actor);
+
+        /// <summary>
+        /// Gets the <see cref="ICoreActor"/> with the specified <see cref="GamerID"/>.
+        /// </summary>
+        /// <param name="id">The ID of the actor to get.</param>
+        /// <returns>The <see cref="ICoreActor"/> with the specified ID, if they exist, otherwise null.</returns>
+        ICoreActor GetActor(GamerID id);
+
+        /// <summary>
+        /// Initializes all default data registered with <see cref="ActorDataAttribute"/> and <see cref="PlayerDataAttribute"/> for the specified actor.
+        /// </summary>
+        /// <remarks>
+        /// This method is called automtically, do not call it manually.
+        /// </remarks>
+        /// <param name="actor">The actor to initialize.</param>
+        void InitializeDefaultData(ICoreActor actor);
 
         /// <summary>
         /// Returns true if the game has any state to save.

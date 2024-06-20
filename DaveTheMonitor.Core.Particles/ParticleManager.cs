@@ -62,7 +62,7 @@ namespace DaveTheMonitor.Core.Particles
         /// </summary>
         public int IndicesPerParticle => 6;
         /// <summary>
-        /// All particles, including dead particles. Test <see cref="ParticleInstance.Dead"/> if only active particles are needed.
+        /// All particles, including dead particles. Compare <see cref="ParticleInstance.Dead"/> if only active particles are needed.
         /// </summary>
         public IEnumerable<ParticleInstance> Particles => _particles;
         internal int ChunkCount => _chunks.Length;
@@ -436,6 +436,9 @@ namespace DaveTheMonitor.Core.Particles
                 return;
             }
 
+            GraphicsDevice device = CoreGlobals.GraphicsDevice;
+            device.DepthStencilState = DepthStencilState.Default;
+            device.SamplerStates[0] = SamplerState.PointClamp;
             Draw(_alphaTest, player, virtualPlayer);
             Draw(_alphaTestNoFog, player, virtualPlayer);
             Draw(_opaque, player, virtualPlayer);
@@ -455,7 +458,7 @@ namespace DaveTheMonitor.Core.Particles
             ParticleMaterial material = group.Material;
 
             _viewMatrix?.SetValue(virtualPlayer.ViewMatrix);
-            _projectionMatrix?.SetValue(virtualPlayer.ProjectionMatrix);
+            _projectionMatrix?.SetValue(player.ProjectionMatrix);
             _worldMatrix?.SetValue(Matrix.Identity);
             _cameraPos?.SetValue(virtualPlayer.EyePosition);
             _texture?.SetValue(_registry.Texture);

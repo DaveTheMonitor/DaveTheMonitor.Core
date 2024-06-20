@@ -15,9 +15,10 @@ namespace DaveTheMonitor.Core.Assets
         /// <summary>
         /// Creates a new asset containing this specified map.
         /// </summary>
-        /// <param name="fullPath">The full path of the component.</param>
+        /// <param name="fullPath">The full path of this asset.</param>
+        /// <param name="name">The name of this asset.</param>
         /// <param name="map">The map of this asset. Should be a component.</param>
-        public CoreMapAsset(string fullPath, ICoreMap map) : base(fullPath)
+        public CoreMapAsset(string fullPath, string name, ICoreMap map) : base(fullPath, name)
         {
             Map = map;
         }

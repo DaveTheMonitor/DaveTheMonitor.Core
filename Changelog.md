@@ -150,3 +150,194 @@ Particles Module now uses instanced rendering.
 
 Removed `CoreUtils`
 - `ModVersion? CoreUtils.ParseModVersion(string)` is now available as `bool DeserializationHelper.TryParseModVersion(string, out ModVersion)`
+
+# v0.1.3-dev
+
+This update is primarily focused on improving the C# API and adding a new animation system.
+
+## Highlights
+
+This is a new section of the patch notes that aims to highlight the most important changes/additions of the update in an easier to understand way. All future updates will include this section.
+
+Changed the default load directory of Core content from `CSR` to `CoreContent`. This change will break all existing core mods, so be sure to rename that directory accordingly.
+
+Added Core content and `ModInfo.xml` to repo.
+
+Added a new animation system that supports skeletal animations.
+
+Added `ActorDataAttribute` and `PlayerDataAttribute` to allow auto-initializing `ICoreData` implementations on actors without using an `ICoreActorManager.ActorAdded` event listener.
+
+`ICoreData` is no longer limited to one data instance per mod, now being limited to one data instance per type. This means one mod can add multiple pieces of data to an actor.
+
+Mod assets are now lazy loaded. This means that until an asset is used, it is not loaded.
+
+C# mods can now add custom asset types thanks to the above using `ICoreModManager.AddAssetLoader(Type, string, string, ICoreAssetLoader)` in `ICorePlugin.Initialize` before they load any assets. To make this possible, the mod manager is now available through `ICoreMod`.
+
+## C# Changes
+
+`DaveTheMonitor.Core.API`
+- Added `ActorDataAttribute`
+  - This attribute can be applied to implementations of `ICoreData<ICoreActor>` to automatically create and initialize it for actors without requiring an `ActorManager.ActorAdded` event listener.
+- Added `PlayerDataAttribute`
+  - Like `ActorDataAttribute`, this attribute tells the Core mod to automatically create and initialize the data, but only for players.
+- `ICoreActor`
+  - Renamed `IsOnGround` to `Grounded`
+  - Added `ActorModel Model { get; }`
+  - Added `AnimationControllerAnimation { get; }`
+  - Added `bool PlayAnimation(string)`
+  - Added `bool IsOnGround(float)`
+  - Added `void Update()`
+- `ICoreActorManager`
+  - Added `void Update()`
+- `ICoreData`
+  - Added `int Priority { get; }`
+- `ICoreGame`
+  - Added `ICoreActor` GetActor(GamerID)
+  - Added `ICorePlayer` GetPlayer(GamerID)
+  - Added `bool TryGetPlayer(ITMPlayer, out ICorePlayer)`
+  - This method exists as not all `ITMPlayer` instances will have an associated `ICorePlayer`, eg. CCTV, but custom data from the virtual player may be needed for UI drawing. This method can be used to easily ensure the virtual player is an actual player.
+  - Added `void InitializeDefaultData(ICoreActor)`
+    - Implementation detail, don't call this method.
+- `ICoreMod`
+  - Replaced `void Load(ModInfo, IMapComponentLoader)` with `void Load(ModInfo)`
+  - Removed `ContentManager MGContent`
+    - MonoGame content is now loaded through `ModContentManager.MGContent`
+  - Removed `CoreModAsset GetAsset(string)`
+  - Removed `T GetAsset<T>(string)`
+  - Removed `Texture2D GetTexture(string, int)`
+  - Removed `ICoreMap GetComponent(string)`
+  - Removed `string GetFullPathToAsset(string)`
+  - Added `ModContentManager Content { get; }`
+    - All mod content loading is now done through this content manager.
+  - Added `ICoreModManager ModManager { get; }`
+- `ICoreModManager`
+  - Replaced `CoreModAsset GetAsset(ICoreMod, string)` with `LoadAsset(ICoreMod, string)`
+  - Replaced `T GetAsset<T>(ICoreMod, string)` with `LoadAsset<T>(ICoreMod, string)`
+  - Replaced `Texture2D GetTexture(ICoreMod, string)` with `Texture2D LoadTexture(ICoreMod, string)`
+  - Replaced `ICoreMap GetComponent(ICoreMod, string)` with `ICoreMap LoadComponent(ICoreMod, string)`
+  - Added `ActorModel LoadActorModel(ICoreMod, string)`
+  - Added `JsonActorAnimation LoadActorAnimation(ICoreMod, string)`
+  - Added `JsonAnimationController LoadAnimationController(ICoreMod, string)`
+  - Added `void AddAssetLoader(Type, string, string, ICoreAssetLoader)`
+- `ICoreWorld`
+  - Added `ICoreActorRenderer ActorRenderer { get; }`
+  - Added `void Update()`
+- `IHasCoreData<T>`
+  - Data is no longer limited to one data instance per mod, it is now instead limited to one instance per type. This means a mod instance is no longer required to set or get any data, only the type.
+  - Replaced `T GetData<T>(ICoreMod)` with `T GetData<T>()`
+  - Replaced `void SetData(ICoreMod, ICoreData<TSelf>)` with `void SetData<ICoreData<TSelf>)`
+  - Replaced `T SetDefaultData<T>(ICoreMod)` with `T SetDefaultData<T>()`
+  - Added `bool TryGetData<T>(out T)`
+  - Added `void GetAllData(List<ICoreData<TSelf>> result)`
+  - Added `bool HasData<T>()`
+  - Added `void SetData<T>(T)`
+  - Added `T SetData<T>()`
+  - Added `ICoreData<TSelf> SetDefaultData(<ICoreData<TSelf>)`
+  - Added `T SetDefaultData<T>(T)`
+
+`DaveTheMonitor.Core`
+- Renamed `GlobalData` to `CoreGlobalData`
+- Added `CoreDataInitializer<T>`
+- Added `ModContentManager`
+
+`DaveTheMonitor.Core.Animation`
+- `KeyframeCollection<T>`
+  - Renamed `TotalTime` to `Length`
+  - Renamed `SetKeyFrames` to `SetKeyframes`
+  - Added `void GetAllKeyframes(float, float, List<T>)`
+  - Added `List<T> GetAllKeyframes(float, float)`
+  - Added `KeyframeCollection<T> Add(float, T)`
+  - Added `KeyframeCollection<T> Clone()`
+  - Added constructor `KeyframeCollection()`
+  - Fixed some bugs in `GetValue(float)` and `GetKeyframes(float, out Keyframe<T>, out Keyframe<T>)`
+- Added `ActorAnimation`
+- Added `ActorKeyframeChannel`
+- Added `ActorModel`
+- Added `ActorPart`
+- Added `ActorPartKeyframe`
+- Added `ActorPartSnapshot`
+- Added `AnimationController`
+- Added `AnimationLoopType`
+- Added `AnimationState`
+- Added `EasingType`
+- Added `InterpolationExtensions`
+- Added `ICoreActorRenderer`
+
+`DaveTheMonitor.Core.Animation.Json`
+- Added `JsonActorAnimation`
+- Added `JsonAnimationController`
+- Added `JsonAnimationState`
+- Added `JsonAnimationTransition`
+
+`DaveTheMonitor.Core.Assets.Loaders`
+- Added `ICoreAssetLoader`
+
+`DaveTheMonitor.Core.Assets`
+- `CoreModAsset`
+  - Replaced constructor `CoreModAsset(string)` with `CoreModAsset(string, string)`
+  - Added `string Name { get; }`
+- `CoreMapAsset`
+  - Replaced constructor `CoreMapAsset(string, ICoreMap)` with `CoreMapAsset(string, string, ICoreMap)`
+- `CoreTextureAsset`
+  - Replaced constructor `CoreTextureAsset(string, Texture2D)` with `CoreMapAsset(string, string, Texture2D)`
+- Added `CoreActorAnimationAsset`
+- Added `CoreActorModelAsset`
+- Added `CoreAnimationControllerAsset`
+
+`DaveTheMonitor.Core.Behaviors`
+- Added `CoreBehaviorTreeNode`
+- Added `CoreBehaviorTreeNodeAttribute`
+
+`DaveTheMonitor.Core.Components`
+- Moved to namespace `DaveTheMonitor.Core.Components.Actors`:
+  - `ActorBreatheUnderwaterComponent`
+  - `ActorCombatComponent`
+  - `ActorDefinitionComponent`
+  - `ActorImmuneToFireComponent`
+  - `ActorNaturalSpawnComponent`
+  - `ActorPassiveComponent`
+- Moved to namespace `DaveTheMonitor.Core.Components.Items`:
+  - `ItemDefinitionComponent`
+  - `ItemDisplayComponent`
+  - `ItemDurabilityComponent`
+  - `ItemLockedComponent`
+  - `ItemStackableComponent`
+  - `ItemStatBonusComponent`
+  - `ItemTextureComponent`
+  - `ItemTradeableComponent`
+  - `ItemTypeComponent`
+  - `ItemWeaponComponent`
+
+`DaveTheMonitor.Core.Components.Actors`
+- Added `ActorAnimationControllerComponent`
+- Added `ActorModelComponent`
+
+`DaveTheMonitor.Core.Helpers`
+- `MethodHelper`
+  - Fixed return type conversion verification
+- `DeserializationHelper`
+  - Added `BoundingBox? GetBoundingBoxProperty(JsonElement, string)`
+- Removed `Interpolation`
+  - Use `KeyframeCollection<T>` with `InterpolationExtensions` instead.
+
+`DaveTheMonitor.Core.Json`
+- Added `InvalidCoreJsonException`
+- Added `JsonCondition`
+  - JsonConditions can be deserialized from Json and provide a way for Json definitions to define more complex conditions for certain actions. Currently only used for animation controllers.
+- Added `JsonConditionAttribute`
+- Added `JsonConditionOperator`
+- Added `AllCondition`
+- Added `AnimationFinishedCondition`
+- Added `AnyCondition`
+- Added `BooleanCondition`
+- Added `FalseCondition`
+- Added `HealthCondition`
+- Added `HorizontalSpeedCondition`
+- Added `IsOnGroundCondition`
+- Added `IsSwingingCondition`
+- Added `SingleComparisonCondition`
+- Added `TrueCondition`
+- Added `VerticalSpeedCondition`
+- Added `XVelocityCondition`
+- Added `YVelocityCondition`
+- Added `ZVelocityCondition`

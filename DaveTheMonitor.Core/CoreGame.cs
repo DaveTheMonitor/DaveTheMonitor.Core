@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StudioForge.BlockWorld;
 using StudioForge.Engine;
 using StudioForge.Engine.Core;
+using StudioForge.Engine.GamerServices;
 using StudioForge.Engine.GUI;
 using StudioForge.Engine.Integration;
 using StudioForge.TotalMiner;
@@ -19,6 +20,7 @@ using StudioForge.TotalMiner.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace DaveTheMonitor.Core
 {
@@ -45,6 +47,8 @@ namespace DaveTheMonitor.Core
         private Dictionary<ulong, byte[]> _playerSaveData;
         private int _playerSaveStateTmVersion;
         private int _playerSaveStateCoreVersion;
+        private CoreDataInitializer<ICoreActor> _playerDataInitializer;
+        private CoreDataInitializer<ICoreActor>[] _actorDataInitializers;
 
         static CoreGame()
         {
@@ -135,9 +139,93 @@ namespace DaveTheMonitor.Core
             return _currentWorld.ActorManager.GetPlayer(player);
         }
 
+        public ICorePlayer GetPlayer(GamerID id)
+        {
+            return _currentWorld.ActorManager.GetPlayer(id);
+        }
+
+        public bool TryGetPlayer(ITMPlayer player, out ICorePlayer result)
+        {
+            result = GetPlayer(player);
+            return result != null;
+        }
+
         public ICoreActor GetActor(ITMActor actor)
         {
             return _currentWorld.ActorManager.GetActor(actor);
+        }
+
+        public ICoreActor GetActor(GamerID id)
+        {
+            return _currentWorld.ActorManager.GetActor(id);
+        }
+
+        public void InitializeDefaultData(ICoreActor actor)
+        {
+            if (actor.IsPlayer)
+            {
+                _playerDataInitializer?.CreateAndInitializeAll(actor);
+            }
+            _actorDataInitializers?[actor.CoreActor.NumId]?.CreateAndInitializeAll(actor);
+        }
+
+        internal void AllModsLoaded()
+        {
+            foreach (ICoreMod mod in ModManager.GetAllActivePlugins())
+            {
+                foreach (Type type in mod.Assembly.GetTypes())
+                {
+                    ActorDataAttribute actorAttribute = type.GetCustomAttribute<ActorDataAttribute>();
+                    if (actorAttribute != null)
+                    {
+                        CreateActorDataInitializers(type, actorAttribute.Actors);
+                    }
+
+                    PlayerDataAttribute playerAttribute = type.GetCustomAttribute<PlayerDataAttribute>();
+                    if (playerAttribute != null)
+                    {
+                        _playerDataInitializer ??= new CoreDataInitializer<ICoreActor>();
+                        _playerDataInitializer.AddType(type);
+                    }
+                }
+            }
+        }
+
+        private void CreateActorDataInitializers(Type type, string[] actors)
+        {
+            if (actors == null)
+            {
+                _actorDataInitializers ??= new CoreDataInitializer<ICoreActor>[Globals1.NpcTypeData.Length];
+                for (int i = 0; i < _actorDataInitializers.Length; i++)
+                {
+                    CreateActorDataInitializer(type, i);
+                }
+            }
+            else
+            {
+                foreach (string id in actors)
+                {
+                    int index = Array.FindIndex(Globals1.NpcTypeData, data => data.IDString == id);
+                    if (index == -1)
+                    {
+                        continue;
+                    }
+
+                    CreateActorDataInitializer(type, index);
+                }
+            }
+        }
+
+        private void CreateActorDataInitializer(Type type, int index)
+        {
+            _actorDataInitializers ??= new CoreDataInitializer<ICoreActor>[Globals1.NpcTypeData.Length];
+            CoreDataInitializer<ICoreActor> initializer = _actorDataInitializers[index];
+            if (initializer == null)
+            {
+                initializer = new CoreDataInitializer<ICoreActor>();
+                _actorDataInitializers[index] = initializer;
+            }
+            initializer.AddType(type);
         }
 
         public void Update()
@@ -145,11 +233,12 @@ namespace DaveTheMonitor.Core
             ModManager.ModUpdate();
             foreach (ICoreWorld world in _worlds)
             {
+                world.Update();
                 ModManager.ModUpdate(world);
-            }
-            foreach (Actor actor in _currentWorld.ActorManager.Actors)
-            {
-                ModManager.ModUpdate(actor);
+                foreach (ICoreActor actor in world.ActorManager.Actors)
+                {
+                    ModManager.ModUpdate(actor);
+                }
             }
         }
 
@@ -369,20 +458,16 @@ namespace DaveTheMonitor.Core
             }
         }
 
-        public T GetData<T>(ICoreMod mod) where T : ICoreData<ICoreGame>
-        {
-            return _data.GetData<T>(mod);
-        }
-
-        public void SetData(ICoreMod mod, ICoreData<ICoreGame> data)
-        {
-            _data.SetData(mod, data);
-        }
-
-        public T SetDefaultData<T>(ICoreMod mod) where T : ICoreData<ICoreGame>, new()
-        {
-            return _data.SetDefaultData<T>(mod);
-        }
+        public T GetData<T>() where T : ICoreData<ICoreGame> => _data.GetData<T>();
+        public bool TryGetData<T>(out T result) where T : ICoreData<ICoreGame> => _data.TryGetData(out result);
+        public void GetAllData(List<ICoreData<ICoreGame>> result) => _data.GetAllData(result);
+        public bool HasData<T>() => _data.HasData<T>();
+        public void SetData(ICoreData<ICoreGame> data) => _data.SetData(data);
+        public void SetData<T>(T data) where T : ICoreData<ICoreGame> => _data.SetData(data);
+        public T SetData<T>() where T : ICoreData<ICoreGame>, new() => _data.SetData<T>();
+        public ICoreData<ICoreGame> SetDefaultData(ICoreData<ICoreGame> data) => _data.SetDefaultData(data);
+        public T SetDefaultData<T>(T data) where T : ICoreData<ICoreGame> => _data.SetDefaultData(data);
+        public T SetDefaultData<T>() where T : ICoreData<ICoreGame>, new() => _data.SetDefaultData<T>();
 
         internal CoreGame(ITMGame game)
         {

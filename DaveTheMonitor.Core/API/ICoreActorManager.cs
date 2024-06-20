@@ -79,6 +79,7 @@ namespace DaveTheMonitor.Core.API
         /// Clears <paramref name="list"/>, then fills it with all actors hit by <paramref name="ray"/>.
         /// </summary>
         /// <param name="ray">The ray to test.</param>
+        /// <param name="maxDistance">The maximum distance of the ray.</param>
         /// <param name="list">The list to fill.</param>
         void GetActors(Ray ray, float maxDistance, ICollection<ICoreActor> list);
 
@@ -116,5 +117,10 @@ namespace DaveTheMonitor.Core.API
         /// <param name="actor">The actor to remove.</param>
         /// <returns>True if the actor was removed, otherwise false.</returns>
         bool RemoveActor(ITMActor actor);
+
+        /// <summary>
+        /// Called every frame.
+        /// </summary>
+        void Update();
     }
 }

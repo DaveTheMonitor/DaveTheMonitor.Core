@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace DaveTheMonitor.Core.Animation
 {
@@ -6,6 +7,7 @@ namespace DaveTheMonitor.Core.Animation
     /// A keyframe containing a value and time.
     /// </summary>
     /// <typeparam name="T">The type of the value of this keyframe.</typeparam>
+    [DebuggerDisplay("Time = {Time}, Value = {Value}")]
     public struct Keyframe<T> : IComparable<Keyframe<T>>
     {
         /// <summary>

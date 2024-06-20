@@ -60,7 +60,7 @@ namespace DaveTheMonitor.Core.Biomes
             decorations.RegisterDefinition(new BasicDecoration("Core.SnowBoulderSmall1", "SnowBoulderSmall1", true, new GlobalPoint3D(1, 1, 1), Map.CopyType.Merge), Mod);
             decorations.RegisterDefinition(new BasicDecoration("Core.SnowBoulder1", "SnowBoulder1", true, new GlobalPoint3D(2, 2, 2), Map.CopyType.Merge), Mod);
             decorations.RegisterDefinition(new BasicDecoration("Core.SnowBoulderLarge1", "SnowBoulderLarge1", true, new GlobalPoint3D(4, 3, 4), Map.CopyType.Merge), Mod);
-            game.SetDefaultData<BiomeGameData>(Mod).SetRegisters(biomes, decorations);
+            game.SetDefaultData<BiomeGameData>().SetRegisters(biomes, decorations);
         }
 
         private void LanturnColorModifier(ICorePlayer player, ITMPlayer virtualPlayer, ref Vector3 color)
@@ -129,13 +129,13 @@ namespace DaveTheMonitor.Core.Biomes
 
         private void ActorAdded(object sender, CoreActorEventArgs e)
         {
-            e.Actor.SetDefaultData<BiomeActorData>(Mod);
+            e.Actor.SetDefaultData<BiomeActorData>();
         }
 
         public void InitializeWorld(ICoreWorld world)
         {
             world.ActorManager.ActorAdded += ActorAdded;
-            BiomeManager biomeManager = world.SetDefaultData<BiomeWorldData>(Mod).BiomeManager;
+            BiomeManager biomeManager = world.SetDefaultData<BiomeWorldData>().BiomeManager;
             foreach (ICoreMod mod in _game.ModManager.GetAllActiveMods())
             {
                 //LoadBiomes(mod);
@@ -262,7 +262,7 @@ namespace DaveTheMonitor.Core.Biomes
 
         public void Update(ICoreActor actor)
         {
-            actor.GetData<BiomeActorData>(Mod).Update();
+            actor.BiomeData().Update();
         }
 
         public void UnloadMod()

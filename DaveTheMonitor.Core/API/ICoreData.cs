@@ -12,6 +12,11 @@
         bool ShouldSave { get; }
 
         /// <summary>
+        /// The priority of this data. Lower priority data is added first. The default priority is 100. This number should not change for any data instance in a session.
+        /// </summary>
+        int Priority => 100;
+
+        /// <summary>
         /// Initializes this data with <paramref name="item"/>.
         /// </summary>
         /// <param name="item">The item that owns this data.</param>

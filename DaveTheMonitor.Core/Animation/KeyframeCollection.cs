@@ -1,5 +1,7 @@
-﻿using System;
+﻿using DaveTheMonitor.Core.Json;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 
@@ -9,12 +11,13 @@ namespace DaveTheMonitor.Core.Animation
     /// A collection of keyframes for animation.
     /// </summary>
     /// <typeparam name="T">The type of the value of the keyframes.</typeparam>
+    [DebuggerDisplay("Length = {Length}, Keyframes = {_keyframes.Length}")]
     public sealed class KeyframeCollection<T>
     {
         /// <summary>
         /// The total time of this keyframe animation.
         /// </summary>
-        public float TotalTime => _keyframes[_keyframes.Length - 1].Time;
+        public float Length => _keyframes.Length >= 1 ? _keyframes[_keyframes.Length - 1].Time : 0;
         private Keyframe<T>[] _keyframes;
 
         /// <summary>
@@ -38,7 +41,7 @@ namespace DaveTheMonitor.Core.Animation
         {
             if (element.ValueKind != JsonValueKind.Object)
             {
-                throw new InvalidOperationException("Keyframe collection must be an object");
+                throw new InvalidCoreJsonException("Keyframe collection must be an object");
             }
 
             List<Keyframe<T>> keyframes = new List<Keyframe<T>>();
@@ -46,7 +49,7 @@ namespace DaveTheMonitor.Core.Animation
             {
                 if (!float.TryParse(property.Name, out float time) || time < 0)
                 {
-                    throw new InvalidOperationException("Keyframe time must be a positive number.");
+                    throw new InvalidCoreJsonException("Keyframe time must be a positive number.");
                 }
 
                 Keyframe<T> keyframe = new Keyframe<T>(time, parse(property.Value));
@@ -67,6 +70,15 @@ namespace DaveTheMonitor.Core.Animation
         public T GetValue(float time)
         {
             Keyframe<T>[] keyframes = _keyframes;
+            if (keyframes.Length == 0)
+            {
+                return default(T);
+            }
+            else if (keyframes.Length == 1)
+            {
+                return keyframes[0].Value;
+            }
+
             for (int i = keyframes.Length - 1; i >= 0; i--)
             {
                 if (keyframes[i].Time <= time)
@@ -75,8 +87,9 @@ namespace DaveTheMonitor.Core.Animation
                 }
             }
 
-            // If no keyframes <= time, we must be on the last keyframe
-            return keyframes[keyframes.Length - 1].Value;
+            // If no keyframes <= time, we must be in negative time.
+            // We treat this as the first keyframe.
+            return keyframes[0].Value;
         }
 
         /// <summary>
@@ -88,6 +101,23 @@ namespace DaveTheMonitor.Core.Animation
         public void GetKeyframes(float time, out Keyframe<T> keyframe1, out Keyframe<T> keyframe2)
         {
             Keyframe<T>[] keyframes = _keyframes;
+            if (keyframes.Length == 0)
+            {
+                keyframe1 = keyframe2 = new Keyframe<T>(0, default(T));
+                return;
+            }
+            else if (keyframes.Length == 1)
+            {
+                keyframe1 = keyframe2 = keyframes[0];
+                return;
+            }
+            
+            if (time >= Length)
+            {
+                keyframe1 = keyframe2 = keyframes[_keyframes.Length - 1];
+                return;
+            }
+
             for (int i = keyframes.Length - 1; i >= 0; i--)
             {
                 if (keyframes[i].Time <= time)
@@ -98,18 +128,120 @@ namespace DaveTheMonitor.Core.Animation
                 }
             }
 
-            keyframe1 = keyframes[_keyframes.Length - 1];
-            keyframe2 = keyframe1;
+            // If no keyframes <= time, we must be in negative time.
+            // We treat this as the first keyframe.
+            keyframe1 = keyframe2 = keyframes[0];
+        }
+
+        /// <summary>
+        /// Gets all of the keyframes between <paramref name="minTime"/> and <paramref name="maxTime"/> and stores them in <paramref name="result"/>.
+        /// </summary>
+        /// <param name="minTime">The minimum time.</param>
+        /// <param name="maxTime">The maximum time.</param>
+        /// <param name="result">The list to store the result in.</param>
+        public void GetAllKeyframes(float minTime, float maxTime, List<T> result)
+        {
+            result.Clear();
+            if (_keyframes.Length == 0)
+            {
+                return;
+            }
+
+            if (_keyframes.Length == 1)
+            {
+                if (_keyframes[0].Time >= minTime && _keyframes[0].Time <= maxTime)
+                {
+                    result.Add(_keyframes[0].Value);
+                }
+                return;
+            }
+
+            foreach (Keyframe<T> keyframe in _keyframes)
+            {
+                if (keyframe.Time >= minTime && keyframe.Time <= maxTime)
+                {
+                    result.Add(keyframe.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all of the keyframes between <paramref name="minTime"/> and <paramref name="maxTime"/>.
+        /// </summary>
+        /// <param name="minTime">The minimum time.</param>
+        /// <param name="maxTime">The maximum time.</param>
+        /// <returns>A list of all keyframes between <paramref name="minTime"/> and <paramref name="maxTime"/>. This will be null if there are no keyframes within the specified timeframe.</returns>
+        public List<T> GetAllKeyframes(float minTime, float maxTime)
+        {
+            if (_keyframes.Length == 0)
+            {
+                return null;
+            }
+
+            if (_keyframes.Length == 1)
+            {
+                if (_keyframes[0].Time >= minTime && _keyframes[0].Time <= maxTime)
+                {
+                    return new List<T>()
+                    {
+                        _keyframes[0].Value
+                    };
+                }
+            }
+
+            List<T> list = null;
+            foreach (Keyframe<T> keyframe in _keyframes)
+            {
+                if (keyframe.Time >= minTime && keyframe.Time <= maxTime)
+                {
+                    list ??= new List<T>();
+                    list.Add(keyframe.Value);
+                }
+            }
+            return list;
         }
 
         /// <summary>
         /// Sets the keyframes in this <see cref="KeyframeCollection{T}"/> to a copy of <paramref name="keyframes"/>.
         /// </summary>
         /// <param name="keyframes">The keyframes to copy.</param>
-        public void SetKeyFrames(IEnumerable<Keyframe<T>> keyframes)
+        public void SetKeyframes(IEnumerable<Keyframe<T>> keyframes)
         {
             _keyframes = keyframes.ToArray();
             Array.Sort(_keyframes);
+        }
+
+        /// <summary>
+        /// Adds the specified keyframe to this <see cref="KeyframeCollection{T}"/>.
+        /// </summary>
+        /// <param name="time">The time of this keyframe.</param>
+        /// <param name="keyframe">The keyframe to add.</param>
+        /// <returns>This <see cref="KeyframeCollection{T}"/></returns>
+        public KeyframeCollection<T> Add(float time, T keyframe)
+        {
+            int index = _keyframes.Length;
+            Array.Resize(ref _keyframes, _keyframes.Length + 1);
+            _keyframes[index] = new Keyframe<T>(time, keyframe);
+            Array.Sort(_keyframes);
+            return this;
+        }
+
+        /// <summary>
+        /// Clones this <see cref="KeyframeCollection{T}"/>.
+        /// </summary>
+        /// <returns>A new <see cref="KeyframeCollection{T}"/> this the contents of this <see cref="KeyframeCollection{T}"/>.</returns>
+        public KeyframeCollection<T> Clone()
+        {
+            KeyframeCollection<T> copy = new KeyframeCollection<T>(_keyframes);
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a new, empty <see cref="KeyframeCollection{T}"/>.
+        /// </summary>
+        public KeyframeCollection()
+        {
+            _keyframes = Array.Empty<Keyframe<T>>();
         }
 
         /// <summary>
@@ -118,7 +250,7 @@ namespace DaveTheMonitor.Core.Animation
         /// <param name="keyframes">The keyframes to copy.</param>
         public KeyframeCollection(IEnumerable<Keyframe<T>> keyframes)
         {
-            SetKeyFrames(keyframes);
+            SetKeyframes(keyframes);
         }
     }
 }

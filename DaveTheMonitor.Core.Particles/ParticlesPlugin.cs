@@ -31,6 +31,8 @@ namespace DaveTheMonitor.Core.Particles
         private Texture2D _slice;
         private int _sliceDepth;
 #endif
+        private VertexBuffer _vertexBuffer;
+        private BasicEffect _basicEffect;
 
         /// <summary>
         /// IPlugin.Initialize implementation.
@@ -40,7 +42,20 @@ namespace DaveTheMonitor.Core.Particles
             Mod = mod;
             Instance = this;
             InitializeDelegates();
-            _particleShader = mod.MGContent.Load<Effect>("Shaders/ParticleShader");
+            _particleShader = mod.Content.MGContent.Load<Effect>("Shaders/ParticleShader");
+
+            VertexPositionColor[] vertices = new VertexPositionColor[]
+            {
+                new VertexPositionColor(new Vector3(-0.5f, -0.5f, 0), Color.White),
+                new VertexPositionColor(new Vector3(0, 0.5f, 0), Color.White),
+                new VertexPositionColor(new Vector3(0.5f, -0.5f, 0), Color.White),
+            };
+            _vertexBuffer = new VertexBuffer(CoreGlobals.GraphicsDevice, typeof(VertexPositionColor), 3, BufferUsage.WriteOnly);
+            _vertexBuffer.SetData(vertices);
+            _basicEffect = new BasicEffect(CoreGlobals.GraphicsDevice);
+            _basicEffect.VertexColorEnabled = true;
+            _basicEffect.TextureEnabled = false;
+            _basicEffect.LightingEnabled = false;
         }
 
         /// <summary>
@@ -50,7 +65,7 @@ namespace DaveTheMonitor.Core.Particles
         {
             _game = game;
             ParticleRegistry particleRegistry = new ParticleRegistry(game);
-            game.SetDefaultData<ParticleGameData>(Mod).SetRegister(particleRegistry);
+            game.SetDefaultData<ParticleGameData>().SetRegistry(particleRegistry);
             particleRegistry.RegisterAllTypesAndJson<JsonParticle>(game.ModManager.GetAllActiveMods(), "Particles");
             Texture3D texture = particleRegistry.BuildTextureAtlas(out Dictionary<ParticleDefinition, ParticleTextureInfo> info);
             particleRegistry.SetTexture(texture);
@@ -74,7 +89,7 @@ namespace DaveTheMonitor.Core.Particles
 
         public void InitializeWorld(ICoreWorld world)
         {
-            world.SetDefaultData<ParticleWorldData>(Mod);
+            world.SetDefaultData<ParticleWorldData>();
         }
 
         /// <summary>
@@ -82,9 +97,10 @@ namespace DaveTheMonitor.Core.Particles
         /// </summary>
         public void Draw(ICorePlayer player, ITMPlayer virtualPlayer, Viewport vp)
         {
-            ParticleManager particleManager = player.World.GetData<ParticleWorldData>(Mod).ParticleManager;
+            ParticleManager particleManager = player.World.GetData<ParticleWorldData>().ParticleManager;
             particleManager.Update(virtualPlayer, true, true);
             particleManager.Draw(player, virtualPlayer, vp);
+
 #if DEBUG
             if (_slice != null)
             {

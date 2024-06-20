@@ -1,11 +1,13 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Commands;
+using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Scripts;
 using DaveTheMonitor.Scripts.Compiler;
 using Microsoft.Xna.Framework;
 using StudioForge.Engine;
 using StudioForge.Engine.Core;
 using StudioForge.Engine.Integration;
+using StudioForge.TotalMiner;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -87,7 +89,7 @@ namespace DaveTheMonitor.Core
                 }
                 _stream.Position = 0;
                 using BinaryReader reader = new BinaryReader(_stream, Encoding.Default, true);
-                player.Game.ReadState(reader, 0, 0);
+                player.Game.ReadState(reader, Globals1.SaveVersion, CoreGlobalData.CoreSaveVersion);
                 log.WriteLine("Game state read.");
             }
             catch (Exception e)

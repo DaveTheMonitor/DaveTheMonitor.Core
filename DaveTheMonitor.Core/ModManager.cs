@@ -1,5 +1,8 @@
-﻿using DaveTheMonitor.Core.API;
+﻿using DaveTheMonitor.Core.Animation;
+using DaveTheMonitor.Core.Animation.Json;
+using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Assets;
+using DaveTheMonitor.Core.Assets.Loaders;
 using DaveTheMonitor.Core.Plugin;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.TotalMiner;
@@ -14,11 +17,27 @@ namespace DaveTheMonitor.Core
 {
     internal sealed class ModManager : ICoreModManager
     {
-        public static readonly string ContentPath = "CSR";
+        private struct AssetTypeInfo
+        {
+            public Type Type { get; set; }
+            public string Path { get; set; }
+            public string Filter { get; set; }
+            public ICoreAssetLoader Loader { get; set; }
+
+            public AssetTypeInfo(Type type, string path, string filter, ICoreAssetLoader loader)
+            {
+                Type = type;
+                Path = path;
+                Filter = filter;
+                Loader = loader;
+            }
+        }
+        public static string ContentPath => "CoreContent";
         public int ActiveMods => _activeMods.Count;
         private List<ICoreMod> _activeMods;
         private List<ICoreMod> _activePlugins;
         private IMapComponentLoader _mapLoader;
+        private List<AssetTypeInfo> _assetTypeInfo;
 
         public bool IsModActive(string id)
         {
@@ -79,44 +98,67 @@ namespace DaveTheMonitor.Core
             return defining ?? CorePlugin.Instance.CoreMod;
         }
 
-        public CoreModAsset GetAsset(ICoreMod mod, string fullId)
+        public CoreModAsset LoadAsset(ICoreMod mod, string name)
         {
-            ICoreMod targetMod = GetTargetMod(fullId, out string strippedId) ?? mod;
-            return targetMod.GetAsset(strippedId);
+            ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
+            return targetMod.Content.LoadAsset(strippedName);
         }
 
-        public T GetAsset<T>(ICoreMod mod, string fullId) where T : CoreModAsset
+        public T LoadAsset<T>(ICoreMod mod, string name) where T : CoreModAsset
         {
-            ICoreMod targetMod = GetTargetMod(fullId, out string strippedId) ?? mod;
-            return targetMod.GetAsset<T>(strippedId);
+            ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
+            return targetMod.Content.LoadAsset<T>(strippedName);
         }
 
-        public Texture2D GetTexture(ICoreMod mod, string fullId, int size)
+        public Texture2D LoadTexture(ICoreMod mod, string name)
+        {
+            return LoadTexture(mod, name, true);
+        }
+
+        public Texture2D LoadTexture(ICoreMod mod, string name, bool returnMissingTexture)
         {
             // TODO: add TM.Texture for items and blocks?
-            ICoreMod targetMod = GetTargetMod(fullId, out string strippedId) ?? mod;
-            return targetMod.GetTexture(strippedId, size);
+            ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
+            return targetMod.Content.LoadTexture(strippedName, returnMissingTexture);
         }
 
-        public ICoreMap GetComponent(ICoreMod mod, string fullId)
+        public ICoreMap LoadComponent(ICoreMod mod, string name)
         {
-            ICoreMod targetMod = GetTargetMod(fullId, out string strippedId) ?? mod;
-            return targetMod.GetComponent(strippedId);
+            ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
+            return targetMod.Content.LoadComponent(strippedName);
         }
 
-        private ICoreMod GetTargetMod(string fullId, out string strippedId)
+        public ActorModel LoadActorModel(ICoreMod mod, string name)
         {
-            int index = fullId.LastIndexOf('.');
+            ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
+            return targetMod.Content.LoadActorModel(strippedName);
+        }
+
+        public JsonActorAnimation LoadActorAnimation(ICoreMod mod, string name)
+        {
+            ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
+            return targetMod.Content.LoadActorAnimation(strippedName);
+        }
+
+        public JsonAnimationController LoadAnimationController(ICoreMod mod, string name)
+        {
+            ICoreMod targetMod = GetTargetMod(name, out string strippedName) ?? mod;
+            return targetMod.Content.LoadAnimationController(strippedName);
+        }
+
+        private ICoreMod GetTargetMod(string name, out string strippedName)
+        {
+            int index = name.LastIndexOf('.');
             if (index == -1)
             {
-                strippedId = fullId;
+                strippedName = name;
                 return null;
             }
 
-            string modId = fullId.Substring(0, index);
+            string modId = name.Substring(0, index);
             ICoreMod mod = GetMod(modId);
 
-            strippedId  = fullId.Substring(index + 1);
+            strippedName  = name.Substring(index + 1);
             return mod;
         }
 
@@ -168,8 +210,15 @@ namespace DaveTheMonitor.Core
             }
 
             ModInfo modInfo = JsonSerializer.Deserialize<ModInfo>(File.ReadAllText(infoPath), options);
-            Mod mod = new Mod(path, modInfo, tmMod, ModType.Core);
-            mod.Load(modInfo, _mapLoader);
+            Mod mod = new Mod(path, modInfo, tmMod, ModType.Core, this);
+            mod.Load(modInfo);
+            if (mod.Content != null)
+            {
+                foreach (AssetTypeInfo info in _assetTypeInfo)
+                {
+                    mod.Content.AddAssetType(info.Type, info.Path, info.Filter, info.Loader);
+                }
+            }
             return mod;
         }
 
@@ -216,6 +265,7 @@ namespace DaveTheMonitor.Core
                 {
                     continue;
                 }
+
                 string corePath = Path.Combine(mod.FullPath, ContentPath);
                 if (Directory.Exists(corePath))
                 {
@@ -227,7 +277,7 @@ namespace DaveTheMonitor.Core
                 }
 
                 ModInfo info = new ModInfo(mod.ID, mod.Version);
-                list.Add(new Mod(mod.FullPath, info, mod, ModType.TM));
+                list.Add(new Mod(mod.FullPath, info, mod, ModType.TM, this));
             }
 
             return list;
@@ -301,11 +351,36 @@ namespace DaveTheMonitor.Core
             }
         }
 
+        public void AddAssetLoader(Type assetType, string path, string filter, ICoreAssetLoader loader)
+        {
+            foreach (AssetTypeInfo info in _assetTypeInfo)
+            {
+                if (info.Type == assetType)
+                {
+                    throw new InvalidOperationException($"A loader for {assetType.FullName} has already been added.");
+                }
+            }
+
+            _assetTypeInfo.Add(new AssetTypeInfo(assetType, path, filter, loader));
+            foreach (ICoreMod mod in _activeMods)
+            {
+                mod.Content.AddAssetType(assetType, path, filter, loader);
+            }
+        }
+
         public ModManager(IMapComponentLoader componentLoader)
         {
             _activeMods = new List<ICoreMod>();
             _activePlugins = new List<ICoreMod>();
             _mapLoader = componentLoader;
+            _assetTypeInfo = new List<AssetTypeInfo>()
+            {
+                new AssetTypeInfo(typeof(CoreTextureAsset), "Textures", "*.png", new CoreTextureAssetLoader()),
+                new AssetTypeInfo(typeof(CoreMapAsset), "Components", "*.com", new CoreComponentAssetLoader(_mapLoader)),
+                new AssetTypeInfo(typeof(CoreActorModelAsset), "Models", "*.json", new CoreActorModelAssetLoader()),
+                new AssetTypeInfo(typeof(CoreActorAnimationAsset), "Animations", "*.json", new CoreActorAnimationAssetLoader()),
+                new AssetTypeInfo(typeof(CoreAnimationControllerAsset), "AnimationControllers", "*.json", new CoreAnimationControllerAssetLoader()),
+            };
         }
     }
 }

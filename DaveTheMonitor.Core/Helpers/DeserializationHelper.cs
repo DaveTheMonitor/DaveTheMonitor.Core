@@ -51,14 +51,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="string"/>, otherwise null.</returns>
         public static string GetStringProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.String)
-                {
-                    return value.GetString();
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.String)
+            {
+                return null;
+            }
+
+            return value.GetString();
         }
 
         /// <summary>
@@ -69,14 +72,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a value in <typeparamref name="T"/>, otherwise null.</returns>
         public static T? GetEnumProperty<T>(JsonElement element, string propertyName) where T : struct
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.String && Enum.TryParse(value.GetString(), true, out T result))
-                {
-                    return result;
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.String || !Enum.TryParse(value.GetString(), true, out T result))
+            {
+                return null;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -87,14 +93,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="bool"/>, otherwise null.</returns>
         public static bool? GetBoolProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False)
-                {
-                    return value.GetBoolean();
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.True && value.ValueKind != JsonValueKind.False)
+            {
+                return null;
+            }
+
+            return value.GetBoolean();
         }
 
         /// <summary>
@@ -105,14 +114,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="byte"/>, otherwise null.</returns>
         public static byte? GetByteProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetByte(out byte value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetByte(out byte result) ? result : null;
         }
 
         /// <summary>
@@ -123,14 +130,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is an <see cref="sbyte"/>, otherwise null.</returns>
         public static sbyte? GetSByteProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetSByte(out sbyte value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetSByte(out sbyte result) ? result : null;
         }
 
         /// <summary>
@@ -141,14 +146,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="short"/>, otherwise null.</returns>
         public static short? GetInt16Property(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetInt16(out short value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetInt16(out short result) ? result : null;
         }
 
         /// <summary>
@@ -159,14 +162,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="ushort"/>, otherwise null.</returns>
         public static ushort? GetUInt16Property(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetUInt16(out ushort value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetUInt16(out ushort result) ? result : null;
         }
 
         /// <summary>
@@ -177,14 +178,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is an <see cref="int"/>, otherwise null.</returns>
         public static int? GetInt32Property(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetInt32(out int value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetInt32(out int result) ? result : null;
         }
 
         /// <summary>
@@ -195,14 +194,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="uint"/>, otherwise null.</returns>
         public static uint? GetUInt32Property(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetUInt32(out uint value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetUInt32(out uint result) ? result : null;
         }
 
         /// <summary>
@@ -213,14 +210,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="long"/>, otherwise null.</returns>
         public static long? GetInt64Property(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetInt64(out long value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetInt64(out long result) ? result : null;
         }
 
         /// <summary>
@@ -231,14 +226,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="ulong"/>, otherwise null.</returns>
         public static ulong? GetUInt64Property(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetUInt64(out ulong value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetUInt64(out ulong  result) ? result : null;
         }
 
         /// <summary>
@@ -249,14 +242,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="float"/>, otherwise null.</returns>
         public static float? GetSingleProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetSingle(out float value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetSingle(out float result) ? result : null;
         }
 
         /// <summary>
@@ -267,14 +258,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="double"/>, otherwise null.</returns>
         public static double? GetDoubleProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetDouble(out double value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetDouble(out double result) ? result : null;
         }
 
         /// <summary>
@@ -285,14 +274,12 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="decimal"/>, otherwise null.</returns>
         public static decimal? GetDecimalProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.TryGetDecimal(out decimal value2))
-                {
-                    return value2;
-                }
+                return null;
             }
-            return null;
+
+            return value.TryGetDecimal(out decimal result) ? result : null;
         }
 
         /// <summary>
@@ -303,14 +290,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="ModVersion"/>, otherwise null.</returns>
         public static ModVersion? GetVersionProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.String && TryParseModVersion(value.GetString(), out ModVersion version))
-                {
-                    return version;
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.String || !TryParseModVersion(value.GetString(), out ModVersion version))
+            {
+                return null;
+            }
+
+            return version;
         }
 
         /// <summary>
@@ -321,14 +311,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="Color"/>, otherwise null.</returns>
         public static Color? GetColorProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.Array && (value.GetArrayLength() == 3 || value.GetArrayLength() == 4))
-                {
-                    return GetColor(value);
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.Array || (value.GetArrayLength() != 3 && value.GetArrayLength() != 4))
+            {
+                return null;
+            }
+
+            return GetColor(value);
         }
 
         /// <summary>
@@ -341,12 +334,15 @@ namespace DaveTheMonitor.Core.Helpers
         {
             if (element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() == 2)
-                {
-                    return GetVector2(value);
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() != 2)
+            {
+                return null;
+            }
+
+            return GetVector2(value);
         }
 
         /// <summary>
@@ -357,14 +353,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="Vector3"/>, otherwise null.</returns>
         public static Vector3? GetVector3Property(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() == 3)
-                {
-                    return GetVector3(value);
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() != 3)
+            {
+                return null;
+            }
+            
+            return GetVector3(value);
         }
 
         /// <summary>
@@ -375,14 +374,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="Vector4"/>, otherwise null.</returns>
         public static Vector4? GetVector4Property(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() == 4)
-                {
-                    return GetVector4(value);
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() != 4)
+            {
+                return null;
+            }
+
+            return GetVector4(value);
         }
 
         /// <summary>
@@ -393,14 +395,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="Point"/>, otherwise null.</returns>
         public static Point? GetPointProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() == 2)
-                {
-                    return GetPoint(value);
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() != 2)
+            {
+                return null;
+            }
+
+            return GetPoint(value);
         }
 
         /// <summary>
@@ -411,14 +416,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="Point3D"/>, otherwise null.</returns>
         public static Point3D? GetPoint3DProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() == 3)
-                {
-                    return GetPoint3D(value);
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() != 3)
+            {
+                return null;
+            }
+
+            return GetPoint3D(value);
         }
 
         /// <summary>
@@ -429,14 +437,17 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="GlobalPoint3D"/>, otherwise null.</returns>
         public static GlobalPoint3D? GetGlobalPoint3DProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() == 3)
-                {
-                    return GetGlobalPoint3D(value);
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() != 3)
+            {
+                return null;
+            }
+
+            return GetGlobalPoint3D(value);
         }
 
         /// <summary>
@@ -447,14 +458,46 @@ namespace DaveTheMonitor.Core.Helpers
         /// <returns>The value of the specified property if it exists and is a <see cref="Rectangle"/>, otherwise null.</returns>
         public static Rectangle? GetRectangleProperty(JsonElement element, string propertyName)
         {
-            if (element.TryGetProperty(propertyName, out JsonElement value))
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
             {
-                if (value.ValueKind == JsonValueKind.Array && value.GetArrayLength() == 4)
-                {
-                    return GetRectangle(value);
-                }
+                return null;
             }
-            return null;
+
+            if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() != 4)
+            {
+                return null;
+            }
+
+            return GetRectangle(value);
+        }
+
+        /// <summary>
+        /// Gets the value of the specified property if it exists and is a <see cref="BoundingBox"/>, otherwise null.
+        /// </summary>
+        /// <param name="element">The parent element of the property.</param>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <returns>The value of the specified property if it exists and is a <see cref="BoundingBox"/>, otherwise null.</returns>
+        public static BoundingBox? GetBoundingBoxProperty(JsonElement element, string propertyName)
+        {
+            if (!element.TryGetProperty(propertyName, out JsonElement value))
+            {
+                return null;
+            }
+
+            if (value.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            Vector3? min = GetVector3Property(value, "Min");
+            Vector3? max = GetVector3Property(value, "Max");
+
+            if (!min.HasValue || !max.HasValue)
+            {
+                return null;
+            }
+
+            return new BoundingBox(min.Value, max.Value);
         }
 
         /// <summary>

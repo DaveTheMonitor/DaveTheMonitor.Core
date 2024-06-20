@@ -1,0 +1,11 @@
+<ModInfoXML>
+  <ID>DaveTheMonitor.Core</ID>
+  <Name>CSR Core</Name>
+  <Desc>Core mod that can load other mods using the Core API. Contains built-in modules that add additional functionality to the API.</Desc>
+  <Author>Dave The Monitor</Author>
+  <Version>
+    <Major>0</Major>
+    <Minor>1</Minor>
+    <Patch>3</Patch>
+  </Version>
+</ModInfoXML>

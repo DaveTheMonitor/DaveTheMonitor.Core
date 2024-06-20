@@ -3,6 +3,9 @@ using StudioForge.TotalMiner.API;
 
 namespace DaveTheMonitor.Core.API
 {
+    /// <summary>
+    /// A hand of an actor.
+    /// </summary>
     public interface ICoreHand
     {
         /// <summary>

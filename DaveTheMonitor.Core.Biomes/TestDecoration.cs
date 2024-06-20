@@ -13,7 +13,7 @@ namespace DaveTheMonitor.Core.Biomes
 
         public override void OnRegister(ICoreMod mod)
         {
-            _component = Game.ModManager.GetComponent(mod, "Test").TMMap;
+            _component = Game.ModManager.LoadComponent(mod, "Test").TMMap;
         }
     }
 }

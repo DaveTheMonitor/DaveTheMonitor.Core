@@ -1,4 +1,5 @@
-﻿using DaveTheMonitor.Core.API;
+﻿using DaveTheMonitor.Core.Animation;
+using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Components;
 using DaveTheMonitor.Core.Helpers;
 using DaveTheMonitor.Core.Particles.Components;
@@ -66,7 +67,7 @@ namespace DaveTheMonitor.Core.Particles
             var display = components.GetComponent<ParticleDisplayComponent>();
             if (display != null)
             {
-                Texture = Game.ModManager.GetTexture(mod, display.Texture, 16);
+                Texture = Game.ModManager.LoadTexture(mod, display.Texture);
             }
         }
 
@@ -211,12 +212,12 @@ namespace DaveTheMonitor.Core.Particles
 
         public override Vector2 GetSize(ParticleInstance particle)
         {
-            return Display.Size ?? Interpolation.Lerp(Display.SizeKeyframes, GetAgeNormalized(particle));
+            return Display.Size ?? Display.SizeKeyframes.Lerp(GetAgeNormalized(particle));
         }
 
         public override Color GetColor(ParticleInstance particle)
         {
-            return Display.ParticleColor ?? Interpolation.Lerp(Display.ColorKeyframes, GetAgeNormalized(particle));
+            return Display.ParticleColor ?? Display.ColorKeyframes.Lerp(GetAgeNormalized(particle));
         }
 
         private Vector3 GetEmitOffset(ParticleInstance particle)

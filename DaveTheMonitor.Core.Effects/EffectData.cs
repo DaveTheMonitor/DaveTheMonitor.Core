@@ -5,6 +5,7 @@ using System.IO;
 
 namespace DaveTheMonitor.Core.Effects
 {
+    [ActorData]
     public sealed class EffectData : ICoreData<ICoreActor>, IEnumerable<ActorEffect>
     {
         public ICoreActor Actor { get; private set; }
@@ -116,6 +117,16 @@ namespace DaveTheMonitor.Core.Effects
         {
             effect = GetEffect(definition);
             return effect != null;
+        }
+
+        public bool HasEffect(string id)
+        {
+            return GetEffect(id) != null;
+        }
+
+        public bool HasEffect(ActorEffectDefinition definition)
+        {
+            return GetEffect(definition) != null;
         }
 
         public void ReadState(BinaryReader reader, int tmVersion, int coreVersion)

@@ -13,57 +13,178 @@ namespace DaveTheMonitor.Core
     /// <typeparam name="TData">The type of data contained in the collection.</typeparam>
     public sealed class CoreDataCollection<TData> : IHasCoreData<TData>, IEnumerable<ICoreData<TData>>
     {
-        private Dictionary<ICoreMod, ICoreData<TData>> _data;
+        private List<ICoreData<TData>> _list;
+        private Dictionary<Type, ICoreData<TData>> _dict;
         private TData _item;
 
+        private static int CompareData(ICoreData<TData> left, ICoreData<TData> right)
+        {
+            return left.Priority.CompareTo(right.Priority);
+        }
+
         /// <summary>
-        /// Gets the data from the specified mod, or default(T) if the mod didn't add any data. If the type of the data is not known at runtime, use <see cref="GetData(ICoreMod)"/>
+        /// Gets the data from the specified mod as <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type of data to get.</typeparam>
-        /// <param name="mod">The mod that added the data.</param>
-        /// <returns>The data from the specified mod, or default(T) if the mod didn't add any data.</returns>
-        public T GetData<T>(ICoreMod mod) where T : ICoreData<TData>
+        /// <returns>The data of type <typeparamref name="T"/>, or default(T) if no data is found.</returns>
+        public T GetData<T>() where T : ICoreData<TData>
         {
-            ICoreData<TData> data = GetData(mod);
-            return data is T t ? t : default;
-        }
-
-        /// <summary>
-        /// Gets the data from the specified mod, or null if the mod didn't add any data.
-        /// </summary>
-        /// <param name="mod">The mod that added the data.</param>
-        /// <returns>The data from the specified mod, or null if the mod didn't add any data.</returns>
-        public ICoreData<TData> GetData(ICoreMod mod)
-        {
-            if (_data.TryGetValue(mod, out ICoreData<TData> data))
+            if (_dict.TryGetValue(typeof(T), out ICoreData<TData> data))
             {
-                return data;
+                return (T)data;
             }
-            return null;
+            return default(T);
         }
 
         /// <summary>
-        /// Sets the data for the specified mod, adding it if it doesn't exist.
+        /// Sets <paramref name="result"/> to the data of type <typeparamref name="T"/>, or default if it doesn't exist.
         /// </summary>
-        /// <param name="mod">The mod to associate the data with.</param>
-        /// <param name="data">The data to set for the mod.</param>
-        public void SetData(ICoreMod mod, ICoreData<TData> data)
+        /// <typeparam name="T">The type of data to get.</typeparam>
+        /// <returns>True if the data is exists, otherwise false.</returns>
+        public bool TryGetData<T>(out T result) where T : ICoreData<TData>
         {
-            _data[mod] = data;
-            data.Initialize(_item);
+            if (_dict.TryGetValue(typeof(T), out ICoreData<TData> data))
+            {
+                result = (T)data;
+                return true;
+            }
+            
+            result = default(T);
+            return false;
         }
 
         /// <summary>
-        /// Sets the data for the specified mod to a new instance of <typeparamref name="T"/>, adding it if it doesn't exist.
+        /// Clears and fills <paramref name="result"/> with the data for this item.
         /// </summary>
-        /// <typeparam name="T">The type of the data to set for the mod.</typeparam>
-        /// <param name="mod">The mod to associate the data with.</param>
+        /// <param name="result">The list to fill.</param>
+        public void GetAllData(List<ICoreData<TData>> result)
+        {
+            result.Clear();
+            result.AddRange(_list);
+        }
+
+        /// <summary>
+        /// Returns true if this item has data of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the data.</typeparam>
+        /// <returns>True if the data exists, otherwise false.</returns>
+        public bool HasData<T>()
+        {
+            return _dict.ContainsKey(typeof(T));
+        }
+
+        /// <summary>
+        /// Sets the data of type of <paramref name="data"/> to the value. It's best practice to only call this for your own mod.
+        /// </summary>
+        /// <param name="data">The data to set.</param>
+        public void SetData(ICoreData<TData> data)
+        {
+            if (_dict.TryGetValue(data.GetType(), out ICoreData<TData> existing))
+            {
+                int index = _list.IndexOf(existing);
+                _list[index] = data;
+                _dict[data.GetType()] = data;
+                data.Initialize(_item);
+                return;
+            }
+
+            SetAndInitialize(data.GetType(), data);
+        }
+
+        /// <summary>
+        /// Sets the data of type <typeparamref name="T"/> to the value. It's best practice to only call this for your own data.
+        /// </summary>
+        /// <param name="data">The data to set.</param>
+        public void SetData<T>(T data) where T : ICoreData<TData>
+        {
+            if (_dict.TryGetValue(typeof(T), out ICoreData<TData> existing))
+            {
+                int index = _list.IndexOf(existing);
+                _list[index] = data;
+                _dict[typeof(T)] = data;
+                data.Initialize(_item);
+                return;
+            }
+
+            SetAndInitialize(typeof(T), data);
+        }
+
+        /// <summary>
+        /// Sets the data of type <typeparamref name="T"/> to a new instance of <typeparamref name="T"/>. It's best practice to only call this for your own data.
+        /// </summary>
+        /// <typeparam name="T">The type of data to set.</typeparam>
         /// <returns>The newly created data.</returns>
-        public T SetDefaultData<T>(ICoreMod mod) where T : ICoreData<TData>, new()
+        public T SetData<T>() where T : ICoreData<TData>, new()
         {
             T data = new T();
-            SetData(mod, data);
+            if (_dict.TryGetValue(typeof(T), out ICoreData<TData> existing))
+            {
+                int index = _list.IndexOf(existing);
+                _list[index] = data;
+                _dict[typeof(T)] = data;
+                data.Initialize(_item);
+                return data;
+            }
+
+            SetAndInitialize(typeof(T), data);
             return data;
+        }
+
+        /// <summary>
+        /// Sets the data of type of <paramref name="data"/> to the value if it doesn't already exist. It's best practice to only call this for your own data.
+        /// </summary>
+        /// <param name="data">The data to set.</param>
+        /// <returns>The existing data if data of type of <paramref name="data"/> if it already exists, otherwise <paramref name="data"/>.</returns>
+        public ICoreData<TData> SetDefaultData(ICoreData<TData> data)
+        {
+            if (_dict.TryGetValue(data.GetType(), out ICoreData<TData> existing))
+            {
+                return existing;
+            }
+
+            SetAndInitialize(data.GetType(), data);
+            return data;
+        }
+
+        /// <summary>
+        /// Sets the data of type <typeparamref name="T"/> to the value if it doesn't already exist. It's best practice to only call this for your own data.
+        /// </summary>
+        /// <param name="data">The data to set.</param>
+        /// <returns>The existing data if data of type <typeparamref name="T"/> already exists, otherwise <paramref name="data"/>.</returns>
+        public T SetDefaultData<T>(T data) where T : ICoreData<TData>
+        {
+            if (_dict.TryGetValue(typeof(T), out ICoreData<TData> existing))
+            {
+                return (T)existing;
+            }
+
+            SetAndInitialize(typeof(T), data);
+            return data;
+        }
+
+        /// <summary>
+        /// Sets the data of type <typeparamref name="T"/> to a new instance of <typeparamref name="T"/> if it doesn't already exist. It's best practice to only call this for your own data.
+        /// </summary>
+        /// <typeparam name="T">The type of data to set.</typeparam>
+        /// <returns>The newly created data, or the existing data if it already exists.</returns>
+        public T SetDefaultData<T>() where T : ICoreData<TData>, new()
+        {
+            if (_dict.TryGetValue(typeof(T), out ICoreData<TData> existing))
+            {
+                return (T)existing;
+            }
+
+            T data = new T();
+            SetAndInitialize(typeof(T), data);
+            return data;
+        }
+
+        private void SetAndInitialize(Type type, ICoreData<TData> data)
+        {
+            _list.Add(data);
+            _list.Sort(CompareData);
+            _dict.Add(type, data);
+            data.Initialize(_item);
         }
 
         /// <summary>
@@ -72,7 +193,7 @@ namespace DaveTheMonitor.Core
         /// <returns>True if the collection contains any data that should save state.</returns>
         public bool ShouldSaveState()
         {
-            foreach (ICoreData<TData> data in _data.Values)
+            foreach (ICoreData<TData> data in _list)
             {
                 if (data.ShouldSave)
                 {
@@ -94,22 +215,25 @@ namespace DaveTheMonitor.Core
             int count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
             {
-                string modId = reader.ReadString();
+                if (coreVersion < 1)
+                {
+                    // mod ID no longer needed
+                    reader.ReadString();
+                }
                 string typeName = reader.ReadString();
                 int bytes = reader.ReadInt32();
 
-                ICoreMod mod = modManager.GetMod(modId);
-                if (mod == null)
+                Type type = null;
+                foreach (ICoreMod mod in CorePlugin.Instance.Game.ModManager.GetAllActivePlugins())
                 {
-                    reader.BaseStream.Position += bytes;
-                    continue;
+                    type = mod.Assembly.GetType(typeName);
+                    break;
                 }
-
-                Type type = mod.Assembly.GetType(typeName);
+                
                 if (type == null)
                 {
 #if DEBUG
-                    CorePlugin.Warn($"Type {typeName} does not exist in {modId}");
+                    CorePlugin.Warn($"Type {typeName} does not exist.");
 #endif
                     reader.BaseStream.Position += bytes;
                     continue;
@@ -151,26 +275,26 @@ namespace DaveTheMonitor.Core
 
                 if (created)
                 {
-                    SetData(mod, data);
+                    _list.Add(data);
+                    _dict.Add(type, data);
                 }
             }
+
+            _list.Sort(CompareData);
         }
 
         private ICoreData<TData> GetOrCreateData(Type type, out bool created)
         {
-            foreach (ICoreData<TData> data in _data.Values)
+            if (_dict.TryGetValue(type, out ICoreData<TData> data))
             {
-                if (data.GetType() == type)
-                {
-                    created = false;
-                    return data;
-                }
+                created = false;
+                return data;
             }
 
             created = true;
-            ICoreData<TData> newData = Activator.CreateInstance(type) as ICoreData<TData>;
-            newData?.Initialize(_item);
-            return newData;
+            data = Activator.CreateInstance(type) as ICoreData<TData>;
+            data.Initialize(_item);
+            return data;
         }
 
         /// <summary>
@@ -183,20 +307,19 @@ namespace DaveTheMonitor.Core
             writer.Write(0);
 
             int count = 0;
-            foreach (KeyValuePair<ICoreMod, ICoreData<TData>> pair in _data)
+            foreach (ICoreData<TData> data in _list)
             {
-                if (!pair.Value.ShouldSave)
+                if (!data.ShouldSave)
                 {
                     continue;
                 }
 
                 count++;
-                writer.Write(pair.Key.Id);
-                writer.Write(pair.Value.GetType().FullName);
+                writer.Write(data.GetType().FullName);
                 long lengthPos = writer.BaseStream.Position;
                 writer.Write(0);
                 long itemStart = lengthPos + sizeof(int);
-                pair.Value.WriteState(writer);
+                data.WriteState(writer);
                 long itemEnd = writer.BaseStream.Position;
                 writer.BaseStream.Position = lengthPos;
                 writer.Write((int)(itemEnd - itemStart));
@@ -211,12 +334,12 @@ namespace DaveTheMonitor.Core
 
         IEnumerator<ICoreData<TData>> IEnumerable<ICoreData<TData>>.GetEnumerator()
         {
-            return ((IEnumerable<ICoreData<TData>>)_data.Values).GetEnumerator();
+            return ((IEnumerable<ICoreData<TData>>)_list).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)_data.Values).GetEnumerator();
+            return ((IEnumerable)_list).GetEnumerator();
         }
 
         /// <summary>
@@ -225,7 +348,8 @@ namespace DaveTheMonitor.Core
         /// <param name="item">The item this <see cref="CoreDataCollection{TData}"/> contains custom data for.</param>
         public CoreDataCollection(TData item)
         {
-            _data = new Dictionary<ICoreMod, ICoreData<TData>>();
+            _list = new List<ICoreData<TData>>();
+            _dict = new Dictionary<Type, ICoreData<TData>>();
             _item = item;
         }
     }

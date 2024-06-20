@@ -1,4 +1,5 @@
-﻿using DaveTheMonitor.Core.API;
+﻿using DaveTheMonitor.Core.Animation;
+using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Events;
 using DaveTheMonitor.Core.Helpers;
 using DaveTheMonitor.Core.Invokers;
@@ -9,10 +10,13 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using StudioForge.BlockWorld;
+using StudioForge.Engine;
 using StudioForge.Engine.GamerServices;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace DaveTheMonitor.Core
 {
@@ -45,8 +49,9 @@ namespace DaveTheMonitor.Core
 
         #endregion
 
-        //protected Dictionary<ICoreMod, ICoreData<ICoreActor>> ModData;
         protected CoreDataCollection<ICoreActor> Data;
+
+        private float _timeOffGround;
 
         static Actor()
         {
@@ -263,7 +268,7 @@ namespace DaveTheMonitor.Core
         public FlyMode FlyMode { get => TMActor.FlyMode; set => TMActor.FlyMode = value; }
         public int Reach { get => TMActor.Reach; set => TMActor.Reach = value; }
         public bool IsPlayer => TMActor.IsPlayer;
-        public bool IsOnGround => TMActor.IsOnGround;
+        public bool Grounded => TMActor.IsOnGround;
         public bool IsCrouching => TMActor.IsCrouching;
         public bool IsActive => !TMActor.IsDeadOrInactiveOrDisabled;
         public int AddToInventory(InventoryItem item) => TMActor.AddToInventory(item);
@@ -287,6 +292,9 @@ namespace DaveTheMonitor.Core
         public void UpdateMatrices() => TMActor.UpdateMatrices();
 
         #endregion
+
+        public ActorModel Model { get; protected set; }
+        public AnimationController Animation { get; protected set; }
 
         public bool CheckHit(Ray ray, float maxDistance, out float distance, out float damageMultiplier, out bool isCritical)
         {
@@ -427,20 +435,60 @@ namespace DaveTheMonitor.Core
             SwingEnded?.Invoke(this, new CoreActorSwingEventArgs(this, SwingState.Complete, hand, item, time));
         }
 
-        public T GetData<T>(ICoreMod mod) where T : ICoreData<ICoreActor>
+        public bool PlayAnimation(string id)
         {
-            return Data.GetData<T>(mod);
+            if (Model == null)
+            {
+                return false;
+            }
+
+            return Animation.PlayAnimation(id);
         }
 
-        public void SetData(ICoreMod mod, ICoreData<ICoreActor> data)
+        public bool IsOnGround(float coyoteTime)
         {
-            Data.SetData(mod, data);
+            return Grounded || _timeOffGround < coyoteTime;
         }
 
-        public T SetDefaultData<T>(ICoreMod mod) where T : ICoreData<ICoreActor>, new()
+        public void Update()
         {
-            return Data.SetDefaultData<T>(mod);
+            if (!IsActive)
+            {
+                return;
+            }
+
+            if (Model != null)
+            {
+                World.ActorRenderer.AddActorToRender(this);
+            }
+
+            if (!Grounded)
+            {
+                _timeOffGround += Services.ElapsedTime;
+            }
+            else
+            {
+                _timeOffGround = 0;
+            }
+            Animation?.Update();
+            UpdateCore();
         }
+
+        protected virtual void UpdateCore()
+        {
+
+        }
+
+        public T GetData<T>() where T : ICoreData<ICoreActor> => Data.GetData<T>();
+        public bool TryGetData<T>(out T result) where T : ICoreData<ICoreActor> => Data.TryGetData(out result);
+        public void GetAllData(List<ICoreData<ICoreActor>> result) => Data.GetAllData(result);
+        public bool HasData<T>() => Data.HasData<T>();
+        public void SetData(ICoreData<ICoreActor> data) => Data.SetData(data);
+        public void SetData<T>(T data) where T : ICoreData<ICoreActor> => Data.SetData(data);
+        public T SetData<T>() where T : ICoreData<ICoreActor>, new() => Data.SetData<T>();
+        public ICoreData<ICoreActor> SetDefaultData(ICoreData<ICoreActor> data) => Data.SetDefaultData(data);
+        public T SetDefaultData<T>(T data) where T : ICoreData<ICoreActor> => Data.SetDefaultData(data);
+        public T SetDefaultData<T>() where T : ICoreData<ICoreActor>, new() => Data.SetDefaultData<T>();
 
         public Actor(ICoreGame game, ICoreWorld world, ITMActor actor)
         {
