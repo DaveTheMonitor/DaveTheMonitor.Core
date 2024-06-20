@@ -1,8 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
-using DaveTheMonitor.Core.Plugin;
 using StudioForge.TotalMiner;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace DaveTheMonitor.Core
 {

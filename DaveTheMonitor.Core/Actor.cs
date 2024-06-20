@@ -15,7 +15,6 @@ using StudioForge.Engine.GamerServices;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace DaveTheMonitor.Core

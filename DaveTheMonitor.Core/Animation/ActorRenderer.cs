@@ -1,24 +1,15 @@
 ﻿using DaveTheMonitor.Core.API;
+using HarmonyLib;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using StudioForge.BlockWorld;
+using StudioForge.Engine;
+using StudioForge.Engine.Core;
+using StudioForge.Engine.Renderers;
 using StudioForge.TotalMiner.API;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework.Graphics;
-using StudioForge.Engine;
-using StudioForge.Engine.Core;
-using HarmonyLib;
-using Microsoft.Xna.Framework.Graphics.PackedVector;
-using System.Reflection.Metadata;
 using System.Reflection;
-using DaveTheMonitor.Core.Plugin;
-using StudioForge.Engine.Renderers;
-using System.IO;
-using System.Diagnostics;
-using DaveTheMonitor.Core.Helpers;
-using StudioForge.BlockWorld;
 
 namespace DaveTheMonitor.Core.Animation
 {

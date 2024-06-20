@@ -1,15 +1,11 @@
 ﻿using DaveTheMonitor.Core.Animation;
 using DaveTheMonitor.Core.API;
-using DaveTheMonitor.Core.Plugin;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using StudioForge.BlockWorld;
-using StudioForge.Engine;
 using StudioForge.Engine.GamerServices;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
 using System.Collections.Generic;
-using System.IO;
 
 namespace DaveTheMonitor.Core
 {

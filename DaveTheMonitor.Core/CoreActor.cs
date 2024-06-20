@@ -1,14 +1,12 @@
 ﻿using DaveTheMonitor.Core.Animation;
 using DaveTheMonitor.Core.Animation.Json;
 using DaveTheMonitor.Core.API;
-using DaveTheMonitor.Core.Assets;
 using DaveTheMonitor.Core.Components;
 using DaveTheMonitor.Core.Components.Actors;
 using DaveTheMonitor.Core.Helpers;
 using DaveTheMonitor.Core.Plugin;
 using StudioForge.TotalMiner;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 

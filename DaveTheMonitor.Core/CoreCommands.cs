@@ -1,6 +1,5 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Commands;
-using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Scripts;
 using DaveTheMonitor.Scripts.Compiler;
 using Microsoft.Xna.Framework;

@@ -1,9 +1,4 @@
-﻿using DaveTheMonitor.Core.Events;
-using Microsoft.Xna.Framework;
-using StudioForge.Engine.GamerServices;
-using StudioForge.TotalMiner.API;
-using System;
-using System.Collections.Generic;
+﻿using StudioForge.TotalMiner.API;
 
 namespace DaveTheMonitor.Core.API
 {

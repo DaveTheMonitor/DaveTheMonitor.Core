@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DaveTheMonitor.Core.Json
+﻿namespace DaveTheMonitor.Core.Json
 {
     /// <summary>
     /// Represents an operator for a <see cref="JsonCondition"/>.

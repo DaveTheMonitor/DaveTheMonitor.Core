@@ -1,16 +1,10 @@
-﻿using DaveTheMonitor.Core.Helpers;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
+﻿using DaveTheMonitor.Core.API;
+using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using SharpDX.Direct3D9;
-using DaveTheMonitor.Core.Json;
-using DaveTheMonitor.Core.API;
 
 namespace DaveTheMonitor.Core.Animation.Json
 {

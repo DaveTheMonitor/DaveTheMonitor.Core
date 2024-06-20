@@ -1,12 +1,8 @@
 ﻿using DaveTheMonitor.Core.API;
-using DaveTheMonitor.Core.Commands;
 using DaveTheMonitor.Core.Helpers;
 using DaveTheMonitor.Core.Plugin;
 using HarmonyLib;
-using StudioForge.Engine.Integration;
-using StudioForge.TotalMiner.API;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 

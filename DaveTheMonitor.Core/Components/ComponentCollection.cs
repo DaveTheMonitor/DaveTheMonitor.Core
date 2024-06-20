@@ -1,5 +1,4 @@
-﻿using DaveTheMonitor.Core.Plugin;
-using StudioForge.TotalMiner;
+﻿using StudioForge.TotalMiner;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;

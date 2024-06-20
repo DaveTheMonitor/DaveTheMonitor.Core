@@ -1,11 +1,5 @@
-﻿using DaveTheMonitor.Core.API;
-using DaveTheMonitor.Core.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using DaveTheMonitor.Core.Helpers;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace DaveTheMonitor.Core.Json
 {

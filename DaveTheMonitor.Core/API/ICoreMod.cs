@@ -1,7 +1,4 @@
-﻿using DaveTheMonitor.Core.Assets;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using StudioForge.TotalMiner;
+﻿using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
 using System.Reflection;
 
