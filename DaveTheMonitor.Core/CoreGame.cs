@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Commands;
+using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Core.Shaders;
 using DaveTheMonitor.Core.Storage;
 using DaveTheMonitor.Scripts;

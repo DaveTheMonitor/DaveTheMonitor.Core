@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using DaveTheMonitor.Core.Plugin;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

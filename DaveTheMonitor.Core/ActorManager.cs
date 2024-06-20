@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Events;
+using DaveTheMonitor.Core.Plugin;
 using Microsoft.Xna.Framework;
 using StudioForge.Engine.GamerServices;
 using StudioForge.TotalMiner;

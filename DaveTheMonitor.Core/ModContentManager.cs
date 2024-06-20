@@ -107,7 +107,7 @@ namespace DaveTheMonitor.Core
         /// Loads an animation controller asset. Actor animation controller assets must be in the "AnimationControllers" folder.
         /// </summary>
         /// <param name="name">The name of the asset to load.</param>
-        /// <returns>The actor animation loaded, or null if it doesn't exist.</returns>
+        /// <returns>The animation controller loaded, or null if it doesn't exist.</returns>
         public JsonAnimationController LoadAnimationController(string name)
         {
             return LoadAsset<CoreAnimationControllerAsset>("AnimationControllers/" + name)?.AnimationController;

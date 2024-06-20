@@ -1,4 +1,5 @@
 ﻿using DaveTheMonitor.Core.API;
+using DaveTheMonitor.Core.Plugin;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
