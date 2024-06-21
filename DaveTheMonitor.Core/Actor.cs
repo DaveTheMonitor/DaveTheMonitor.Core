@@ -1,6 +1,5 @@
 ﻿using DaveTheMonitor.Core.Animation;
 using DaveTheMonitor.Core.API;
-using DaveTheMonitor.Core.Events;
 using DaveTheMonitor.Core.Helpers;
 using DaveTheMonitor.Core.Invokers;
 using DaveTheMonitor.Scripts;

@@ -1,5 +1,4 @@
 ﻿using DaveTheMonitor.Core.Animation;
-using DaveTheMonitor.Core.Events;
 using DaveTheMonitor.Scripts;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
