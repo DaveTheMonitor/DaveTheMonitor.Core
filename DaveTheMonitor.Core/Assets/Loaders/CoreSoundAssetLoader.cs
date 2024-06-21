@@ -2,8 +2,6 @@
 using Microsoft.Xna.Framework.Audio;
 using System.Collections.Generic;
 using System.IO;
-using DaveTheMonitor.Core.Plugin;
-
 
 #if SHARPDX
 using SharpDX;
