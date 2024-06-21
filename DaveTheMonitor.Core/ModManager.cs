@@ -387,7 +387,7 @@ namespace DaveTheMonitor.Core
                 new AssetTypeInfo(typeof(CoreActorModelAsset), "Models", "*.json", new CoreActorModelAssetLoader()),
                 new AssetTypeInfo(typeof(CoreActorAnimationAsset), "Animations", "*.json", new CoreActorAnimationAssetLoader()),
                 new AssetTypeInfo(typeof(CoreAnimationControllerAsset), "AnimationControllers", "*.json", new CoreAnimationControllerAssetLoader()),
-                new AssetTypeInfo(typeof(CoreSoundAsset), "Sounds", "*.wav", new CoreSoundAssetLoader()),
+                new AssetTypeInfo(typeof(CoreSoundAsset), "Sounds", ".mp3|.wav", new CoreSoundAssetLoader()),
             };
         }
     }
