@@ -28,20 +28,6 @@ namespace DaveTheMonitor.Core
         public Hand RightHand { get; private set; }
         public virtual CoreActor CoreActor => Game.ActorRegistry.GetActor(TMActor.ActorType);
 
-        #region Events
-
-        public event EventHandler<CoreActorHurtEventArgs> Attacked;
-        public event EventHandler<CoreActorHurtEventArgs> Hurt;
-        public event EventHandler<CoreActorHurtEventArgs> Killed;
-        public event EventHandler<CoreActorAttackEventArgs> TargetAttacked;
-        public event EventHandler<CoreActorAttackEventArgs> TargetKilled;
-        public event EventHandler<CoreActorHealedEventArgs> Healed;
-        public event EventHandler<CoreActorSwingEventArgs> SwingStarted;
-        public event EventHandler<CoreActorSwingEventArgs> SwingExtended;
-        public event EventHandler<CoreActorSwingEventArgs> SwingEnded;
-
-        #endregion
-
         #region Invokers
 
         private static ActorDieInvoker _dieInvoker;
@@ -384,54 +370,118 @@ namespace DaveTheMonitor.Core
                 attacker.OnKill(deathType, this, weapon, damage);
             }
 
-            Killed?.Invoke(this, new CoreActorHurtEventArgs(this, attacker, deathType, weapon, damage, true));
+            foreach (ICoreData<ICoreActor> data in Data)
+            {
+                if (data is ActorData actorData)
+                {
+                    actorData.PostKilled(attacker, deathType, weapon, damage);
+                }
+            }
         }
 
         public virtual void OnKill(DamageType deathType, ICoreActor target, CoreItem weapon, float damage)
         {
-            TargetKilled?.Invoke(this, new CoreActorAttackEventArgs(this, target, weapon, damage, true));
+            foreach (ICoreData<ICoreActor> data in Data)
+            {
+                if (data is ActorData actorData)
+                {
+                    actorData.PostKillTarget(target, deathType, weapon, damage);
+                }
+            }
         }
 
         public virtual void OnHurt(DamageType damageType, ICoreActor attacker, CoreItem weapon, float damage)
         {
+            if (!Game.CombatEnabled)
+            {
+                return;
+            }
+
             if (attacker != null)
             {
                 attacker.OnAttack(damageType, this, weapon, damage);
-                Attacked?.Invoke(this, new CoreActorHurtEventArgs(this, attacker, damageType, weapon, damage, Health <= 0));
+                foreach (ICoreData<ICoreActor> data in Data)
+                {
+                    if (data is ActorData actorData)
+                    {
+                        actorData.PostAttacked(attacker, damageType, weapon, damage, true);
+                    }
+                }
             }
 
             if (damage > 0)
             {
-                Hurt?.Invoke(this, new CoreActorHurtEventArgs(this, attacker, damageType, weapon, damage, Health <= 0));
+                foreach (ICoreData<ICoreActor> data in Data)
+                {
+                    if (data is ActorData actorData)
+                    {
+                        actorData.PostHurt(attacker, damageType, weapon, damage, Health <= 0);
+                    }
+                }
             }
         }
 
         public virtual void OnAttack(DamageType damageType, ICoreActor target, CoreItem weapon, float damage)
         {
-            TargetAttacked?.Invoke(this, new CoreActorAttackEventArgs(this, target, weapon, damage, target.Health <= 0));
+            if (!Game.CombatEnabled)
+            {
+                return;
+            }
+
+            foreach (ICoreData<ICoreActor> data in Data)
+            {
+                if (data is ActorData actorData)
+                {
+                    actorData.PostAttackTarget(target, damageType, weapon, damage, target.Health <= 0);
+                }
+            }
         }
 
         public virtual void OnHeal(float health, ICoreActor healer, CoreItem item)
         {
-            Healed?.Invoke(this, new CoreActorHealedEventArgs(this, healer, item, health));
+            foreach (ICoreData<ICoreActor> data in Data)
+            {
+                if (data is ActorData actorData)
+                {
+                    actorData.PostHeal(healer, item, health);
+                }
+            }
         }
 
         public void OnSwingStart(ICoreHand hand, CoreItem item)
         {
             SwingTime time = item.GetSwingTime(SwingState.None);
-            SwingStarted?.Invoke(this, new CoreActorSwingEventArgs(this, SwingState.Extending, hand, item, time));
+            foreach (ICoreData<ICoreActor> data in Data)
+            {
+                if (data is ActorData actorData)
+                {
+                    actorData.PostSwingStart(hand, item, time);
+                }
+            }
         }
 
         public void OnSwingExtended(ICoreHand hand, CoreItem item)
         {
             SwingTime time = item.GetSwingTime(SwingState.Extended);
-            SwingExtended?.Invoke(this, new CoreActorSwingEventArgs(this, SwingState.Extended, hand, item, time));
+            foreach (ICoreData<ICoreActor> data in Data)
+            {
+                if (data is ActorData actorData)
+                {
+                    actorData.PostSwingExtend(hand, item, time);
+                }
+            }
         }
 
         public void OnSwingEnd(ICoreHand hand, CoreItem item)
         {
             SwingTime time = item.GetSwingTime(SwingState.Complete);
-            SwingEnded?.Invoke(this, new CoreActorSwingEventArgs(this, SwingState.Complete, hand, item, time));
+            foreach (ICoreData<ICoreActor> data in Data)
+            {
+                if (data is ActorData actorData)
+                {
+                    actorData.PostSwingEnd(hand, item, time);
+                }
+            }
         }
 
         public bool PlayAnimation(string id)

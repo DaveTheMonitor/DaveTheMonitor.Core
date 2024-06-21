@@ -218,51 +218,6 @@ namespace DaveTheMonitor.Core.API
         AnimationController Animation { get; }
 
         /// <summary>
-        /// Called when this actor is attacked.
-        /// </summary>
-        public event EventHandler<CoreActorHurtEventArgs> Attacked;
-
-        /// <summary>
-        /// Called when this actor is hurt. Unlike <see cref="Attacked"/>, this event does not require an attacker.
-        /// </summary>
-        public event EventHandler<CoreActorHurtEventArgs> Hurt;
-
-        /// <summary>
-        /// Called when this actor dies.
-        /// </summary>
-        public event EventHandler<CoreActorHurtEventArgs> Killed;
-
-        /// <summary>
-        /// Called when this actor attacks another actor.
-        /// </summary>
-        public event EventHandler<CoreActorAttackEventArgs> TargetAttacked;
-
-        /// <summary>
-        /// Called when this actor kills another actor.
-        /// </summary>
-        public event EventHandler<CoreActorAttackEventArgs> TargetKilled;
-
-        /// <summary>
-        /// Called when this actor is healed.
-        /// </summary>
-        public event EventHandler<CoreActorHealedEventArgs> Healed;
-
-        /// <summary>
-        /// Called when this actor's swing starts.
-        /// </summary>
-        public event EventHandler<CoreActorSwingEventArgs> SwingStarted;
-
-        /// <summary>
-        /// Called when this actor's swing is fully extended. This is when damage is dealt and item events are called.
-        /// </summary>
-        public event EventHandler<CoreActorSwingEventArgs> SwingExtended;
-
-        /// <summary>
-        /// Called when this actor's swing ends.
-        /// </summary>
-        public event EventHandler<CoreActorSwingEventArgs> SwingEnded;
-
-        /// <summary>
         /// Adds an item to this actor's inventory.
         /// </summary>
         /// <param name="item">The item to add.</param>
