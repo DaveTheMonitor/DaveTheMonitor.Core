@@ -23,14 +23,8 @@ namespace DaveTheMonitor.Core.Patches
             // behavior nodes.
 
             List<CodeInstruction> list = new List<CodeInstruction>(instructions);
-            int index = list.FindIndex(i => i.Calls(AccessTools.Method("StudioForge.TotalMiner.Screens2.BehaviourTreeDesigner:LoadNodeTypes")));
-            if (index == -1)
-            {
-                return list;
-            }
-
-            index++;
-            list.InsertRange(index, new CodeInstruction[]
+            list.InsertFirst(i => i.Calls(AccessTools.Method("StudioForge.TotalMiner.Screens2.BehaviourTreeDesigner:LoadNodeTypes")),
+                1, new CodeInstruction[]
             {
                 CodeInstruction.LoadArgument(0),
                 CodeInstruction.LoadLocal(1),

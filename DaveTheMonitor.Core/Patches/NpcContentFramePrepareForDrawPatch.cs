@@ -17,20 +17,17 @@ namespace DaveTheMonitor.Core.Patches
             // handles drawing them
 
             List<CodeInstruction> list = new List<CodeInstruction>(instructions);
-            int index = list.FindIndex(i => i.Calls(AccessTools.Method("StudioForge.TotalMiner.Actor:get_IsDeadOrInactiveOrDisabled")));
-            if (index == -1)
+            list.ModifyFirst(i => i.Calls(AccessTools.Method("StudioForge.TotalMiner.Actor:get_IsDeadOrInactiveOrDisabled")), index =>
             {
-                return list;
-            }
-
-            index++;
-            Label label = (Label)list[index].operand;
-            index++;
-            list.InsertRange(index, new CodeInstruction[]
-            {
-                CodeInstruction.LoadLocal(8),
-                CodeInstruction.Call(typeof(NpcContentFramePrepareForDrawPatch), nameof(HasModel)),
-                new CodeInstruction(OpCodes.Brtrue, label)
+                index++;
+                Label label = (Label)list[index].operand;
+                index++;
+                list.InsertRange(index, new CodeInstruction[]
+                {
+                    CodeInstruction.LoadLocal(8),
+                    CodeInstruction.Call(typeof(NpcContentFramePrepareForDrawPatch), nameof(HasModel)),
+                    new CodeInstruction(OpCodes.Brtrue, label)
+                });
             });
 
             return list;

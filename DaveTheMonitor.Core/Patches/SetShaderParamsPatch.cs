@@ -21,14 +21,8 @@ namespace DaveTheMonitor.Core.Patches
             // The first time SetValue is called, all of the locals (except sky/tint color)
             // have been set, so that's when we apply modifiers.
             // The first call is GraphicStatics.GlobalShader.LanturnColor.SetValue(Vector3)
-            int index = list.FindIndex(i => i.Calls(AccessTools.Method(typeof(EffectParameter), nameof(EffectParameter.SetValue), new Type[] { typeof(Vector3) })));
-            if (index == -1)
-            {
-                return list;
-            }
-
-            index -= 2;
-            list.InsertRange(index, new CodeInstruction[]
+            list.InsertFirst(i => i.Calls(AccessTools.Method(typeof(EffectParameter), nameof(EffectParameter.SetValue), new Type[] { typeof(Vector3) })),
+                -2, new CodeInstruction[]
             {
                 // Fog color
                 CodeInstruction.LoadArgument(1),
