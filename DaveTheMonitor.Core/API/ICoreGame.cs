@@ -96,6 +96,51 @@ namespace DaveTheMonitor.Core.API
         string FullPath { get; }
 
         /// <summary>
+        /// Returns true if combat is enabled.
+        /// </summary>
+        bool CombatEnabled { get; }
+
+        /// <summary>
+        /// Returns true if players keep items on death.
+        /// </summary>
+        bool KeepItemsOnDeath { get; }
+
+        /// <summary>
+        /// The <see cref="StudioForge.TotalMiner.GameMode"/> of this world.
+        /// </summary>
+        GameMode GameMode { get; }
+
+        /// <summary>
+        /// The <see cref="StudioForge.TotalMiner.GameDifficulty"/> of this world.
+        /// </summary>
+        StudioForge.TotalMiner.GameDifficulty Difficulty { get; }
+
+        /// <summary>
+        /// True if this world is in creative mode, otherwise false.
+        /// </summary>
+        bool IsCreativeMode { get; }
+
+        /// <summary>
+        /// True if this world has finite resources enabled, otherwise false.
+        /// </summary>
+        bool IsFiniteResources { get; }
+
+        /// <summary>
+        /// True if this world has skills enabled, otherwise false.
+        /// </summary>
+        bool IsSkillsEnabled { get; }
+
+        /// <summary>
+        /// True if this world has local skills enabled, otherwise false.
+        /// </summary>
+        bool IsLocalSkillsEnabled { get; }
+
+        /// <summary>
+        /// True if this world uses local skills, otherwise false.
+        /// </summary>
+        bool IsLocalSkills { get; }
+
+        /// <summary>
         /// Gets the local player with the specified <see cref="PlayerIndex"/>.
         /// </summary>
         /// <param name="playerIndex">The <see cref="PlayerIndex"/> of the player.</param>

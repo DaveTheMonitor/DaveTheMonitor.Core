@@ -64,44 +64,9 @@ namespace DaveTheMonitor.Core.API
         ITMEnvManager TMEnvironmentManager { get; }
 
         /// <summary>
-        /// The <see cref="StudioForge.TotalMiner.GameMode"/> of this world.
-        /// </summary>
-        GameMode GameMode { get; }
-
-        /// <summary>
-        /// The <see cref="GameDifficulty"/> of this world.
-        /// </summary>
-        GameDifficulty Difficulty { get; }
-        
-        /// <summary>
-        /// True if this world is in creative mode, otherwise false.
-        /// </summary>
-        bool IsCreativeMode { get; }
-
-        /// <summary>
-        /// True if this world has finite resources enabled, otherwise false.
-        /// </summary>
-        bool IsFiniteResources { get; }
-
-        /// <summary>
         /// True if this world has a dynamic natural environment, otherwise false.
         /// </summary>
         bool IsDynamicNaturalEnvironment { get; }
-
-        /// <summary>
-        /// True if this world has skills enabled, otherwise false.
-        /// </summary>
-        bool IsSkillsEnabled { get; }
-
-        /// <summary>
-        /// True if this world has local skills enabled, otherwise false.
-        /// </summary>
-        bool IsLocalSkillsEnabled { get; }
-
-        /// <summary>
-        /// True if this world uses local skills, otherwise false.
-        /// </summary>
-        bool IsLocalSkills { get; }
 
         /// <summary>
         /// The current time, in hours, of this world.
@@ -124,7 +89,7 @@ namespace DaveTheMonitor.Core.API
         ICoreMap Map { get; }
 
         /// <summary>
-        /// The <see cref="SaveMapHead"/> of the world.
+        /// The <see cref="SaveMapHead"/> of the world. This method returns a clone.
         /// </summary>
         SaveMapHead Header { get; }
 

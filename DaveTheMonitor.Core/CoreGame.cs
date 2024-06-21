@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Commands;
+using DaveTheMonitor.Core.Helpers;
 using DaveTheMonitor.Core.Plugin;
 using DaveTheMonitor.Core.Shaders;
 using DaveTheMonitor.Core.Storage;
@@ -42,6 +43,7 @@ namespace DaveTheMonitor.Core
         internal static AccessTools.FieldRef<object, ParticleData[]> _systemParticles;
         internal static AccessTools.FieldRef<object, List<ParticleData>> _customParticles;
         internal ICoreWorld _currentWorld;
+        private ITMWorld _tmWorld;
         private ICoreWorld[] _worlds;
         private CoreDataCollection<ICoreGame> _data;
         private Dictionary<ulong, byte[]> _playerSaveData;
@@ -67,6 +69,15 @@ namespace DaveTheMonitor.Core
         public WindowManager WindowManager => TMGame.WindowManager;
         public ITMTexturePack TexturePack => TMGame.TexturePack;
         public SpriteBatchSafe SpriteBatch => TMGame.SpriteBatch;
+        public bool CombatEnabled => _tmWorld.GetCombatEnabled();
+        public bool KeepItemsOnDeath => _tmWorld.GetKeepItemsOnDeath();
+        public GameMode GameMode => _tmWorld.GameMode;
+        public StudioForge.TotalMiner.GameDifficulty Difficulty => _tmWorld.Difficulty;
+        public bool IsCreativeMode => _tmWorld.IsCreativeMode;
+        public bool IsFiniteResources => _tmWorld.IsFiniteResources;
+        public bool IsSkillsEnabled => _tmWorld.IsSkillsEnabled;
+        public bool IsLocalSkillsEnabled => _tmWorld.IsLocalSkillsEnabled;
+        public bool IsLocalSkills => _tmWorld.IsLocalSkills;
 
         public ICorePlayer GetLocalPlayer(PlayerIndex playerIndex)
         {
@@ -501,6 +512,7 @@ namespace DaveTheMonitor.Core
         internal CoreGame(ITMGame game)
         {
             TMGame = game;
+            _tmWorld = game.World;
             _currentWorld = new CoreWorld(this, "Core.Overworld");
             _worlds = new ICoreWorld[1] { _currentWorld };
             _data = new CoreDataCollection<ICoreGame>(this);

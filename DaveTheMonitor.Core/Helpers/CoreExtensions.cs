@@ -92,9 +92,16 @@ namespace DaveTheMonitor.Core.Helpers
 
         #endregion
 
-        #region ITMGame
-        public static Vector3 GetWindVelocity(this ITMGame game) => _windVelocity(_wind(game));
-        public static float GetWindFactor(this ITMGame game) => _header(game).WindFactor;
+        #region ITMWorld
+
+        public static Vector3 GetWindVelocity(this ITMWorld world) => _windVelocity(_wind(world));
+        public static float GetWindFactor(this ITMWorld world) => _header(world).WindFactor;
+        public static bool GetCombatEnabled(this ITMWorld world)
+        {
+            SaveMapHead header = _header(world);
+            return header.GameDifficulty != GameDifficulty.Peaceful && header.CombatEnabled;
+        }
+        public static bool GetKeepItemsOnDeath(this ITMWorld world) => _header(world).KeepItemsOnDeath;
 
         #endregion
 

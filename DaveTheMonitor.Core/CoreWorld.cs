@@ -28,14 +28,7 @@ namespace DaveTheMonitor.Core
         public ITMEntityManager TMEntityManager => TMWorld.EntityManager;
         public ITMEnvManager TMEnvironmentManager => TMWorld.EnvironManager;
         public ICoreActorRenderer ActorRenderer { get; private set; }
-        public GameMode GameMode => TMWorld.GameMode;
-        public GameDifficulty Difficulty => TMWorld.Difficulty;
-        public bool IsCreativeMode => TMWorld.IsCreativeMode;
-        public bool IsFiniteResources => TMWorld.IsFiniteResources;
         public bool IsDynamicNaturalEnvironment => TMWorld.IsDynamicNaturalEnvironment;
-        public bool IsSkillsEnabled => TMWorld.IsSkillsEnabled;
-        public bool IsLocalSkillsEnabled => TMWorld.IsLocalSkillsEnabled;
-        public bool IsLocalSkills => TMWorld.IsLocalSkills;
         public float CurrentHour => TMWorld.CurrentHour;
         public bool IsDayTime => TMWorld.IsDayTime;
         public bool IsNightTime => TMWorld.IsNightTime;
@@ -47,8 +40,8 @@ namespace DaveTheMonitor.Core
         public IEnumerable<MapMarker> GraveMarkers => TMWorld.GraveMarkers;
         public History History => TMWorld.History;
         public IEnumerable<Zone> Zones => TMWorld.Zones;
-        public Vector3 WindVelocity => Game.TMGame.GetWindVelocity();
-        public float WindFactor => Game.TMGame.GetWindFactor();
+        public Vector3 WindVelocity => TMWorld.GetWindVelocity();
+        public float WindFactor => TMWorld.GetWindFactor();
         public event ComponentEventHandler ComponentPasted;
         private ActorManager _actorManager;
         private CoreMap _map;

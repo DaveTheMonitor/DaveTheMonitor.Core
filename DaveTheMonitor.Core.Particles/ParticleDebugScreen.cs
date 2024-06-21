@@ -72,8 +72,8 @@ namespace DaveTheMonitor.Core.Particles
 
         public string UpdateWind(ITMGame game, ITMPlayer player)
         {
-            Vector3 velocity = game.GetWindVelocity();
-            float factor = game.GetWindFactor();
+            Vector3 velocity = game.World.GetWindVelocity();
+            float factor = game.World.GetWindFactor();
             if (_wind.Velocity != velocity || _wind.Factor != factor)
             {
                 _wind.Velocity = velocity;
