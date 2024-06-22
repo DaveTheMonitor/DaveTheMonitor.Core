@@ -52,6 +52,14 @@ namespace DaveTheMonitor.Core.API
             
         }
 
+        /// <summary>
+        /// Called before this actor is attacked by another actor. Use this to modify the damage dealt.
+        /// </summary>
+        /// <param name="attacker">The attacker.</param>
+        /// <param name="weapon">The weapon used.</param>
+        /// <param name="attack">The attack.</param>
+        /// <param name="fatal">True if this damage will result in the death of the actor.</param>
+        /// <returns>The modified attack, or null if the attack was not modified.</returns>
         public virtual AttackInfo? PreAttacked(ICoreActor attacker, CoreItem weapon, AttackInfo attack, bool fatal)
         {
             return null;
@@ -69,6 +77,14 @@ namespace DaveTheMonitor.Core.API
 
         }
 
+        /// <summary>
+        /// Called before this actor is hurt by any damage. Use this to modify the damage taken.
+        /// </summary>
+        /// <param name="attacker">The attacker, or null if there is no attacker.</param>
+        /// <param name="weapon">The weapon used, or <see cref="TMItems.None"/> if no weapon was used.</param>
+        /// <param name="attack">The attack.</param>
+        /// <param name="fatal">True if this damage will result in the death of the actor.</param>
+        /// <returns>The modified attack, or null if the attack was not modified.</returns>
         public virtual AttackInfo? PreHurt(ICoreActor attacker, CoreItem weapon, AttackInfo attack, bool fatal)
         {
             return null;
@@ -97,6 +113,13 @@ namespace DaveTheMonitor.Core.API
 
         }
 
+        /// <summary>
+        /// Called before this actor attacks another actor. Use this to modify the damage dealt.
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <param name="weapon">The weapon used.</param>
+        /// <param name="attack">The attack.</param>
+        /// <param name="fatal">True if this damage will result in the death of the target.</param>
         public virtual AttackInfo? PreAttackTarget(ICoreActor target, CoreItem weapon, AttackInfo attack, bool fatal)
         {
             return null;
@@ -128,7 +151,7 @@ namespace DaveTheMonitor.Core.API
         /// <summary>
         /// Called after this actor is healed.
         /// </summary>
-        /// <param name="healer">The actor that healed this actor, or null if the actor wasn't heald by another actor. The healer may be itself.</param>
+        /// <param name="healer">The actor that healed this actor, or null if the actor wasn't healed by another actor. The healer may be itself.</param>
         /// <param name="item">The item used to heal this actor, or <see cref="TMItems.None"/> if no item was used.</param>
         /// <param name="health">The total health healed. This is not capped by the actor's max health.</param>
         public virtual void PostHeal(ICoreActor healer, CoreItem item, float health)
