@@ -35,7 +35,7 @@ namespace DaveTheMonitor.Core.Patches
 
         public static bool HasModel(ITMActor actor)
         {
-            if (CorePlugin.Instance?.Game == null)
+            if (!CorePlugin.IsValid)
             {
                 return false;
             }

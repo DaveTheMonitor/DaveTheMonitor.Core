@@ -12,6 +12,11 @@ namespace DaveTheMonitor.Core.Patches
     {
         public static bool Prefix(string command, ITMGame ___game, ITMPlayer ___origPlayer, ITMPlayer ___player, IOutputLog ___consoleWin)
         {
+            if (!CorePlugin.IsValid)
+            {
+                return true;
+            }
+
             string[] split = command.Split(";", System.StringSplitOptions.TrimEntries);
             foreach (string cmd in split)
             {

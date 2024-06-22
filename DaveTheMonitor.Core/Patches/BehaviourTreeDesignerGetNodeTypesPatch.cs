@@ -37,7 +37,7 @@ namespace DaveTheMonitor.Core.Patches
 
         public static void LoadCoreNodes(object instance, Type baseType, List<Type> result)
         {
-            if (CorePlugin.Instance?.Game == null)
+            if (!CorePlugin.IsValid)
             {
                 return;
             }

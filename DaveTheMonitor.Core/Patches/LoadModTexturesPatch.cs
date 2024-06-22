@@ -13,7 +13,7 @@ namespace DaveTheMonitor.Core.Patches
             // Game will be null the first time this patch is run, as LoadModTextures
             // is initially called between ITMPlugin.Initialize and ITMPlugin.InitializeGame
             // In this case, textures will be stitched in ITMPlugin.InitializeGame
-            if (CorePlugin.Instance.Game == null)
+            if (!CorePlugin.IsValid)
             {
 #if DEBUG
                 CorePlugin.Log("TextureStitching: Game is null");

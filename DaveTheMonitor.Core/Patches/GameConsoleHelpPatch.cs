@@ -11,6 +11,11 @@ namespace DaveTheMonitor.Core.Patches
     {
         public static void Postfix(string command, ITMGame game, ITMPlayer caller, ITMPlayer player, IOutputLog log)
         {
+            if (!CorePlugin.IsValid)
+            {
+                return;
+            }
+
             if (command.Contains(' '))
             {
                 return;

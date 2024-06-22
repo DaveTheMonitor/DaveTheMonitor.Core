@@ -11,7 +11,7 @@ using System.Reflection;
 namespace DaveTheMonitor.Core.Patches
 {
     [Patch("StudioForge.TotalMiner.Renderers.MapRenderer", "SetShaderParams")]
-    public static class SetShaderParamsPatch
+    internal static class SetShaderParamsPatch
     {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase original)
         {
@@ -61,6 +61,11 @@ namespace DaveTheMonitor.Core.Patches
 
         public static float FogStart(ITMPlayer player, ITMPlayer virtualPlayer, float v)
         {
+            if (!CorePlugin.IsValid)
+            {
+                return v;
+            }
+
             ICoreGame game = CorePlugin.Instance.Game;
             ICorePlayer p = game.GetPlayer(player);
             game.GameShader.ApplyFogStartModifiers(p, virtualPlayer, ref v);
@@ -70,6 +75,11 @@ namespace DaveTheMonitor.Core.Patches
 
         public static float FogEnd(ITMPlayer player, ITMPlayer virtualPlayer, float v)
         {
+            if (!CorePlugin.IsValid)
+            {
+                return v;
+            }
+
             ICoreGame game = CorePlugin.Instance.Game;
             ICorePlayer p = game.GetPlayer(player);
             game.GameShader.ApplyFogEndModifiers(p, virtualPlayer, ref v);
@@ -79,6 +89,11 @@ namespace DaveTheMonitor.Core.Patches
 
         public static Vector4 FogColor(ITMPlayer player, ITMPlayer virtualPlayer, Vector4 v)
         {
+            if (!CorePlugin.IsValid)
+            {
+                return v;
+            }
+
             ICoreGame game = CorePlugin.Instance.Game;
             ICorePlayer p = game.GetPlayer(player);
             game.GameShader.ApplyFogColorModifiers(p, virtualPlayer, ref v);
@@ -88,6 +103,11 @@ namespace DaveTheMonitor.Core.Patches
 
         public static Vector3 LanturnColor(ITMPlayer player, ITMPlayer virtualPlayer, Vector3 v)
         {
+            if (!CorePlugin.IsValid)
+            {
+                return v;
+            }
+
             ICoreGame game = CorePlugin.Instance.Game;
             ICorePlayer p = game.GetPlayer(player);
             game.GameShader.ApplyLanturnColorModifiers(p, virtualPlayer, ref v);
@@ -97,6 +117,11 @@ namespace DaveTheMonitor.Core.Patches
 
         public static float LanturnRange(ITMPlayer player, ITMPlayer virtualPlayer, float v)
         {
+            if (!CorePlugin.IsValid)
+            {
+                return v;
+            }
+
             ICoreGame game = CorePlugin.Instance.Game;
             ICorePlayer p = game.GetPlayer(player);
             game.GameShader.ApplyLanturnRangeModifiers(p, virtualPlayer, ref v);

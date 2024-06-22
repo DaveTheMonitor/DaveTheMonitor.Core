@@ -26,7 +26,7 @@ namespace DaveTheMonitor.Core.Patches
 #if DEBUG
             CorePlugin.Log($"Patching {type.FullName}");
 #endif
-            bool nullTarget = (bool)(type.GetMethod("NullTarget", BindingFlags.Static | BindingFlags.Public)?.Invoke(null, null) ?? false);
+            bool nullTarget = (bool?)type.GetMethod("NullTarget", BindingFlags.Static | BindingFlags.Public)?.Invoke(null, null) ?? false;
 
             IEnumerable<MethodInfo> targets;
             PatchAttribute attribute = type.GetCustomAttribute<PatchAttribute>();
@@ -43,32 +43,27 @@ namespace DaveTheMonitor.Core.Patches
                         Type paramType = AccessTools.TypeByName(paramTypes[i]);
                         if (paramType == null)
                         {
-                            if (nullTarget)
-                            {
-                                return;
-                            }
-                            else
+                            if (!nullTarget)
                             {
                                 throw new PatchException(type, "Parameter type must exist.");
                             }
+                            return;
                         }
                         types[i] = paramType;
                     }
-                    targets = new MethodInfo[] { AccessTools.Method(AccessTools.TypeByName(typeName), methodName, types) };
+                    MethodInfo target = AccessTools.Method(AccessTools.TypeByName(typeName), methodName, types);
+                    if (target == null && !nullTarget)
+                    {
+                        throw new PatchException(type, "TargetMethod must not return null.");
+                    }
+                    targets = new MethodInfo[] { target };
                 }
                 else
                 {
                     MethodInfo target = AccessTools.Method(AccessTools.TypeByName(typeName), methodName);
-                    if (target == null)
+                    if (target == null && !nullTarget)
                     {
-                        if (nullTarget)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            throw new PatchException(type, "Target method must exist.");
-                        }
+                        throw new PatchException(type, "Target method must exist.");
                     }
                     targets = new MethodInfo[] { target };
                 }
@@ -79,16 +74,9 @@ namespace DaveTheMonitor.Core.Patches
                 if (targetMethodMethod != null)
                 {
                     MethodInfo target = (MethodInfo)targetMethodMethod.Invoke(null, null);
-                    if (target == null)
+                    if (target == null && !nullTarget)
                     {
-                        if (nullTarget)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            throw new PatchException(type, "TargetMethod must not return null.");
-                        }
+                        throw new PatchException(type, "TargetMethod must not return null.");
                     }
                     targets = new MethodInfo[] { target };
                 }
@@ -100,41 +88,45 @@ namespace DaveTheMonitor.Core.Patches
                         throw new PatchException(type, "Must implement TargetMethod or TargetMethods.");
                     }
                     targets = (IEnumerable<MethodInfo>)targetMethodsMethod.Invoke(null, null);
-                    if (targets == null)
+                    if (targets == null && !nullTarget)
                     {
-                        if (nullTarget)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            throw new PatchException(type, "TargetMethods must not return null.");
-                        }
+                        throw new PatchException(type, "TargetMethods must not return null.");
                     }
 
                     foreach (MethodInfo target in targets)
                     {
-                        if (target == null)
+                        if (target == null && !nullTarget)
                         {
-                            if (nullTarget)
-                            {
-                                return;
-                            }
-                            else
-                            {
-                                throw new PatchException(type, "TargetMethod must not return a null target.");
-                            }
+                            throw new PatchException(type, "TargetMethod must not return a null target.");
                         }
                     }
                 }
             }
-            
+
+            if (targets == null)
+            {
+                if (!nullTarget)
+                {
+                    throw new PatchException(type, "Target method must exist.");
+                }
+                return;
+            }
             HarmonyMethod prefix = GetMethod(type, "Prefix");
             HarmonyMethod postfix = GetMethod(type, "Postfix");
             HarmonyMethod transpiler = GetMethod(type, "Transpiler");
             HarmonyMethod finalizer = GetMethod(type, "Finalizer");
+
             foreach (MethodInfo target in targets)
             {
+                if (target == null)
+                {
+                    if (!nullTarget)
+                    {
+                        throw new PatchException(type, "Target method must exist.");
+                    }
+                    continue;
+                }
+
                 Harmony.Patch(target, prefix, postfix, transpiler, finalizer);
                 _patches.Add(new PatchInfo(target, prefix?.method, postfix?.method, transpiler?.method, finalizer?.method));
             }

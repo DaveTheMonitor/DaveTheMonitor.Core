@@ -8,6 +8,11 @@ namespace DaveTheMonitor.Core.Patches
     {
         public static void Prefix()
         {
+            if (!CorePlugin.IsValid)
+            {
+                return;
+            }
+
             CorePlugin.Instance.HotLoad();
         }
     }

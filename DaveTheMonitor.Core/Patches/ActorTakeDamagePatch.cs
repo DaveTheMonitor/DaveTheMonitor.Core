@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Plugin;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StudioForge.BlockWorld;
@@ -19,6 +20,11 @@ namespace DaveTheMonitor.Core.Patches
     {
         public static void Postfix(object __instance, DamageType damageType, float damage, Vector3 knockForce, ITMActor attacker, Item weaponID, SkillType attackType)
         {
+            if (!CorePlugin.IsValid || !CorePlugin.Instance.Game.CombatEnabled)
+            {
+                return;
+            }
+
             ICoreActor actor = ((ITMActor)__instance).GetCoreActor();
             ICoreActor coreAttacker = attacker?.GetCoreActor();
             actor.OnHurt(damageType, coreAttacker, actor.Game.ItemRegistry.GetItem(weaponID), damage);

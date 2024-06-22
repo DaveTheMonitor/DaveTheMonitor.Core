@@ -23,12 +23,13 @@ namespace DaveTheMonitor.Core.Patches
 
         public static bool Prefix(string typeName, ref Type __result)
         {
-            // Fixes a bug in vanilla where custom behavior tree
-            // nodes aren't loaded from the correct assembly.
-            if (CorePlugin.Instance?.Game == null)
+            if (!CorePlugin.IsValid)
             {
                 return true;
             }
+
+            // Fixes a bug in vanilla where custom behavior tree
+            // nodes aren't loaded from the correct assembly.
 
             int i = typeName.IndexOf(',');
             if (i == -1)

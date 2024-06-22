@@ -33,6 +33,11 @@ namespace DaveTheMonitor.Core.Plugin
         public static ICoreMod CoreMod { get; private set; }
 
         /// <summary>
+        /// True if this instance of Core Mod is currently loaded. Used by patches as they may execute during a hot reload.
+        /// </summary>
+        public static bool IsValid => Instance?.Game != null;
+
+        /// <summary>
         /// Core's ITMMod.
         /// </summary>
         public ITMMod TMMod { get; private set; }
@@ -269,6 +274,8 @@ namespace DaveTheMonitor.Core.Plugin
 #endif
             _game.ModManager.UnloadAndDisableAll();
             _game.Dispose();
+            _game = null;
+            Instance = null;
             _patchHelper.Unpatch();
         }
 
