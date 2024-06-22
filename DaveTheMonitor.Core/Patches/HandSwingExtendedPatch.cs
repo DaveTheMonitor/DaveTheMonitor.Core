@@ -8,8 +8,8 @@ using System;
 
 namespace DaveTheMonitor.Core.Patches
 {
-    [Patch("StudioForge.TotalMiner.Hand", "OnSwingStart")]
-    internal static class ActorSwingStartPatch
+    [Patch("StudioForge.TotalMiner.Hand", "OnSwingFullyExtended")]
+    internal static class HandSwingExtendedPatch
     {
         public static void Postfix(object __instance, InventoryHand ___HandType, Item ___ItemID, object sender, EventArgs e)
         {
@@ -21,14 +21,14 @@ namespace DaveTheMonitor.Core.Patches
             ICoreActor owner = ((ITMHand)__instance).Owner.GetCoreActor();
             ICoreHand hand = ___HandType == InventoryHand.Left ? owner.LeftHand : owner.RightHand;
             CoreItem item = owner.Game.ItemRegistry[___ItemID];
-            SwingTime time = item.GetSwingTime(SwingState.None);
+            SwingTime time = item.GetSwingTime(SwingState.Extended);
 
             var enumerator = owner.GetDataEnumerator();
             while (enumerator.MoveNext())
             {
                 if (enumerator.Current is ActorData data)
                 {
-                    data.PostSwingStart(hand, item, time);
+                    data.PostSwingExtend(hand, item, time);
                 }
             }
         }

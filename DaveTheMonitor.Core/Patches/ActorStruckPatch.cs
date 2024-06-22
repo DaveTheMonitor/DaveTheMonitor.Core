@@ -26,7 +26,6 @@ namespace DaveTheMonitor.Core.Patches
         {
             List<CodeInstruction> list = new List<CodeInstruction>(instructions);
 
-
             MethodInfo takeDamageAndDisplay = AccessTools.Method("StudioForge.TotalMiner.Actor:TakeDamageAndDisplay", new Type[]
             {
                 typeof(DamageType),
