@@ -74,5 +74,11 @@ namespace DaveTheMonitor.Core.API
         /// <typeparam name="T">The type of data to set.</typeparam>
         /// <returns>The newly created data, or the existing data if it already exists.</returns>
         T SetDefaultData<T>() where T : ICoreData<TSelf>, new();
+
+        /// <summary>
+        /// Gets an enumerator for this item's data.
+        /// </summary>
+        /// <returns>An enumerator for this item's data.</returns>
+        IEnumerator<ICoreData<TSelf>> GetDataEnumerator();
     }
 }

@@ -707,6 +707,7 @@ namespace DaveTheMonitor.Core
         public ICoreData<ICoreWorld> SetDefaultData(ICoreData<ICoreWorld> data) => _data.SetDefaultData(data);
         public T SetDefaultData<T>(T data) where T : ICoreData<ICoreWorld> => _data.SetDefaultData(data);
         public T SetDefaultData<T>() where T : ICoreData<ICoreWorld>, new() => _data.SetDefaultData<T>();
+        public IEnumerator<ICoreData<ICoreWorld>> GetDataEnumerator() => ((IHasCoreData<ICoreWorld>)_data).GetDataEnumerator();
 
         public void ReadState(BinaryReader reader, int tmVersion, int coreVersion)
         {

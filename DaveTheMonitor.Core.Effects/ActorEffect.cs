@@ -2,6 +2,7 @@
 using StudioForge.Engine;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace DaveTheMonitor.Core.Effects
 {
@@ -109,6 +110,16 @@ namespace DaveTheMonitor.Core.Effects
         {
             _data ??= new CoreDataCollection<ActorEffect>(this);
             return _data.SetDefaultData<T>();
+        }
+
+        public IEnumerator<ICoreData<ActorEffect>> GetDataEnumerator()
+        {
+            if (_data != null)
+            {
+                return ((IHasCoreData<ActorEffect>)_data).GetDataEnumerator();
+            }
+
+            return Enumerable.Empty<ICoreData<ActorEffect>>().GetEnumerator();
         }
 
         public void ReadState(BinaryReader reader, int tmVersion, int coreVersion)

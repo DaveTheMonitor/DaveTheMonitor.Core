@@ -342,6 +342,11 @@ namespace DaveTheMonitor.Core
             return ((IEnumerable)_list).GetEnumerator();
         }
 
+        IEnumerator<ICoreData<TData>> IHasCoreData<TData>.GetDataEnumerator()
+        {
+            return ((IEnumerable<ICoreData<TData>>)_list).GetEnumerator();
+        }
+
         /// <summary>
         /// Creates a new <see cref="CoreDataCollection{TData}"/> instance for the specified item.
         /// </summary>

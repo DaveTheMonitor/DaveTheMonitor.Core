@@ -480,6 +480,7 @@ namespace DaveTheMonitor.Core
         public ICoreData<ICoreGame> SetDefaultData(ICoreData<ICoreGame> data) => _data.SetDefaultData(data);
         public T SetDefaultData<T>(T data) where T : ICoreData<ICoreGame> => _data.SetDefaultData(data);
         public T SetDefaultData<T>() where T : ICoreData<ICoreGame>, new() => _data.SetDefaultData<T>();
+        public IEnumerator<ICoreData<ICoreGame>> GetDataEnumerator() => ((IHasCoreData<ICoreGame>)_data).GetDataEnumerator();
 
         private void Dispose(bool disposing)
         {

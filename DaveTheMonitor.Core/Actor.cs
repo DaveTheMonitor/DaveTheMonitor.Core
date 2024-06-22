@@ -537,6 +537,7 @@ namespace DaveTheMonitor.Core
         public ICoreData<ICoreActor> SetDefaultData(ICoreData<ICoreActor> data) => Data.SetDefaultData(data);
         public T SetDefaultData<T>(T data) where T : ICoreData<ICoreActor> => Data.SetDefaultData(data);
         public T SetDefaultData<T>() where T : ICoreData<ICoreActor>, new() => Data.SetDefaultData<T>();
+        public IEnumerator<ICoreData<ICoreActor>> GetDataEnumerator() => ((IHasCoreData<ICoreActor>)Data).GetDataEnumerator();
 
         public Actor(ICoreGame game, ICoreWorld world, ITMActor actor)
         {
