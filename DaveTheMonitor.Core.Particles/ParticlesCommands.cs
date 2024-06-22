@@ -70,7 +70,7 @@ namespace DaveTheMonitor.Core.Particles
         {
             if (!count.HasValue)
             {
-                log?.WriteLine($"Mas particles: {player.World.ParticleManager().MaxParticles}");
+                log?.WriteLine($"Max particles: {player.World.ParticleManager().MaxParticles}");
                 return;
             }
 
@@ -85,5 +85,21 @@ namespace DaveTheMonitor.Core.Particles
                 log?.WriteLine($"Max particle count must be a multiple of {ParticleManager.ParticleChunk.Count}");
             }
         }
+
+#if DEBUG
+        [ConsoleCommand("viewparticleslice", "Views the specified slice of the particle atlas texture.", "Views the specified slice of the particle atlas texture for debugging.", "vslice")]
+        [ConsoleCommandArg(nameof(index), "index", "The index/depth of the slice to view.", false, "i")]
+        public static void ViewParticleSlice(ICorePlayer player, IOutputLog log, int? index)
+        {
+            if (ParticlesPlugin.Instance.ViewSlice(index ?? -1))
+            {
+                log.WriteLine($"Viewing slice {index}.");
+            }
+            else
+            {
+                log.WriteLine($"Hidden particle atlas.");
+            }
+        }
+#endif
     }
 }

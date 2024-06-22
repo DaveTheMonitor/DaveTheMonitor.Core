@@ -29,7 +29,6 @@ namespace DaveTheMonitor.Core.Particles
         internal ICoreGame _game;
 #if DEBUG
         private Texture2D _slice;
-        private int _sliceDepth;
 #endif
         private VertexBuffer _vertexBuffer;
         private BasicEffect _basicEffect;
@@ -69,9 +68,6 @@ namespace DaveTheMonitor.Core.Particles
             particleRegistry.RegisterAllTypesAndJson<JsonParticle>(game.ModManager.GetAllActiveMods(), "Particles");
             Texture3D texture = particleRegistry.BuildTextureAtlas(out Dictionary<ParticleDefinition, ParticleTextureInfo> info);
             particleRegistry.SetTexture(texture);
-#if DEBUG
-            _slice = new Texture2D(CoreGlobals.GraphicsDevice, 512, 512, false, SurfaceFormat.Color);
-#endif
 
             foreach (KeyValuePair<ParticleDefinition, ParticleTextureInfo> item in info)
             {
@@ -124,23 +120,27 @@ namespace DaveTheMonitor.Core.Particles
         /// </summary>
         public bool HandleInput(ICorePlayer player)
         {
-#if DEBUG
-            if (InputManager.IsKeyPressedNew(player.PlayerIndex, Keys.Y))
-            {
-                Texture3D texture = _game.ParticleRegistry().Texture;
-                Color[] data = new Color[texture.Width * texture.Height];
-                texture.GetData(0, 0, 0, 512, 512, _sliceDepth, _sliceDepth + 1, data, 0, data.Length);
-                _slice.SetData(data);
-                _sliceDepth++;
-                if (_sliceDepth == texture.Depth)
-                {
-                    _sliceDepth = 0;
-                }
-                return true;
-            }
-#endif
             return false;
         }
+
+#if DEBUG
+        internal bool ViewSlice(int index)
+        {
+            Texture3D texture = _game.ParticleRegistry().Texture;
+            if (index < 0 || index >= texture.Depth)
+            {
+                _slice = null;
+                return false;
+            }
+
+            _slice ??= new Texture2D(CoreGlobals.GraphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
+
+            Color[] data = new Color[texture.Width * texture.Height];
+            texture.GetData(0, 0, 0, texture.Width, texture.Height, index, index + 1, data, 0, data.Length);
+            _slice.SetData(data);
+            return true;
+        }
+#endif
 
         /// <summary>
         /// IPlugin.Unload implementation.
