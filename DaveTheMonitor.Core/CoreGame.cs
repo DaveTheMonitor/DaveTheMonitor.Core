@@ -32,7 +32,7 @@ namespace DaveTheMonitor.Core
         public ICoreMod ParticlesModule { get; private set; }
         public IMapComponentLoader MapComponentLoader { get; private set; }
         public bool IsHost => true;
-        public CommandRegistry CommandRegister { get; private set; }
+        public CommandRegistry CommandRegistry { get; private set; }
         public ICoreItemRegistry ItemRegistry { get; private set; }
         public ICoreActorRegistry ActorRegistry { get; private set; }
         public IScriptRuntime ScriptRuntime { get; set; }
@@ -263,10 +263,10 @@ namespace DaveTheMonitor.Core
 
         public void RegisterCommands()
         {
-            CommandRegister.RegisterCommands(GetType().Assembly);
+            CommandRegistry.RegisterCommands(GetType().Assembly);
             foreach (ICoreMod mod in ModManager.GetAllActivePlugins())
             {
-                CommandRegister.RegisterCommands(mod.Assembly);
+                CommandRegistry.RegisterCommands(mod.Assembly);
             }
         }
 
@@ -518,7 +518,7 @@ namespace DaveTheMonitor.Core
             _data = new CoreDataCollection<ICoreGame>(this);
             MapComponentLoader = new MapComponentLoader(this);
             ModManager = new ModManager(MapComponentLoader);
-            CommandRegister = new CommandRegistry();
+            CommandRegistry = new CommandRegistry();
             ItemRegistry = new ItemRegistry(this);
             ActorRegistry = new ActorRegistry(this);
             GameShader = new GameShader();

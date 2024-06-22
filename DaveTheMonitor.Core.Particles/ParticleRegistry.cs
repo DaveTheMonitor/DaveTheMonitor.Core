@@ -27,7 +27,7 @@ namespace DaveTheMonitor.Core.Particles
             map = new Dictionary<ParticleDefinition, ParticleTextureInfo>();
             List<Texture2D> textures = new List<Texture2D>();
             Dictionary<Texture2D, List<ParticleDefinition>> textureDefinitions = new Dictionary<Texture2D, List<ParticleDefinition>>();
-            foreach (ParticleDefinition definition in GetAllDefinitions())
+            foreach (ParticleDefinition definition in this)
             {
                 Texture2D texture = definition.Texture;
                 if (texture != null)

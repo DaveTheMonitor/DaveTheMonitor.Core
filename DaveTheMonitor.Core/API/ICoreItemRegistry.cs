@@ -9,6 +9,13 @@ namespace DaveTheMonitor.Core.API
     public interface ICoreItemRegistry : IDefinitionRegistry<CoreItem>
     {
         /// <summary>
+        /// Indexer for items, equivalent to <see cref="GetItem(Item)"/>.
+        /// </summary>
+        /// <param name="item">The item type.</param>
+        /// <returns>The <see cref="CoreItem"/> definition for the specified <see cref="Item"/>.</returns>
+        CoreItem this[Item item] { get; }
+
+        /// <summary>
         /// Initializes all item definitions from <see cref="ItemDataXML"/>.
         /// </summary>
         /// <param name="data">The data to initialize from.</param>

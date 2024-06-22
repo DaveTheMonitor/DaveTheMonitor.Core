@@ -9,13 +9,13 @@ namespace DaveTheMonitor.Core.Patches
     {
         public static bool Prefix(string cmd, ref string __result)
         {
-            CommandRegistry register = CorePlugin.Instance._game.CommandRegister;
-            if (!register.CommandExists(cmd))
+            CommandRegistry registry = CorePlugin.Instance._game.CommandRegistry;
+            if (!registry.CommandExists(cmd))
             {
                 return true;
             }
 
-            CommandInfo info = register.GetCommand(cmd);
+            CommandInfo info = registry.GetCommand(cmd);
             __result = info.GetFullHelpString();
             return false;
         }

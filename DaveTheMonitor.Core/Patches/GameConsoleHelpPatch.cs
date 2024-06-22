@@ -16,7 +16,7 @@ namespace DaveTheMonitor.Core.Patches
                 return;
             }
 
-            CommandRegistry registry = CorePlugin.Instance._game.CommandRegister;
+            CommandRegistry registry = CorePlugin.Instance._game.CommandRegistry;
             foreach (CommandInfo cmd in registry)
             {
                 log.WriteLine($"{cmd.Name}  -- {cmd.ShortHelp}");

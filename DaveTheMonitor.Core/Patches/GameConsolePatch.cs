@@ -22,8 +22,8 @@ namespace DaveTheMonitor.Core.Patches
                 }
 
                 string name = cmd.Substring(0, index);
-                CommandRegistry register = CorePlugin.Instance._game.CommandRegister;
-                if (!register.CommandExists(name))
+                CommandRegistry registry = CorePlugin.Instance._game.CommandRegistry;
+                if (!registry.CommandExists(name))
                 {
                     return true;
                 }
@@ -37,7 +37,7 @@ namespace DaveTheMonitor.Core.Patches
                     ___consoleWin.WriteLine("There was an error parsing arguments.");
                     return false;
                 }
-                register.RunCommand(name, origPlayer, ___consoleWin, args);
+                registry.RunCommand(name, origPlayer, ___consoleWin, args);
             }
             return false;
         }

@@ -8,6 +8,8 @@ namespace DaveTheMonitor.Core
 {
     internal sealed class ActorRegistry : DefinitionRegistry<CoreActor>, ICoreActorRegistry
     {
+        public CoreActor this[ActorType actor] => GetActor(actor);
+
         public void InitializeAllActors(IEnumerable<ActorTypeDataXML> data)
         {
             foreach (ActorTypeDataXML xml in data)

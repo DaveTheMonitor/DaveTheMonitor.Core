@@ -9,6 +9,13 @@ namespace DaveTheMonitor.Core.API
     public interface ICoreActorRegistry : IDefinitionRegistry<CoreActor>
     {
         /// <summary>
+        /// Indexer for actor types, equivalent to <see cref="GetActor(ActorType)"/>.
+        /// </summary>
+        /// <param name="actor">The actor type.</param>
+        /// <returns>The <see cref="CoreActor"/> definition for the specified <see cref="ActorType"/>.</returns>
+        CoreActor this[ActorType actor] { get; }
+
+        /// <summary>
         /// Initializes all actor definitions from <see cref="ActorTypeDataXML"/>.
         /// </summary>
         /// <param name="data">The data to initialize from.</param>

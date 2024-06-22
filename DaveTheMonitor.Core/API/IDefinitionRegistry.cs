@@ -10,6 +10,20 @@ namespace DaveTheMonitor.Core.API
     public interface IDefinitionRegistry<T> : IEnumerable<T> where T : IDefinition
     {
         /// <summary>
+        /// Indexer for numeric IDs, equivalent to <see cref="GetDefinition(int)"/>.
+        /// </summary>
+        /// <param name="numId">The numeric ID of the definition to get.</param>
+        /// <returns>The definition with the specified numeric ID.</returns>
+        T this[int numId] { get; }
+
+        /// <summary>
+        /// Indexer for string IDs, equivalent to <see cref="GetDefinition(string)"/>.
+        /// </summary>
+        /// <param name="id">The ID of the definition to get.</param>
+        /// <returns>The definition with the specified ID.</returns>
+        T this[string id] { get; }
+
+        /// <summary>
         /// The number of registered definitions.
         /// </summary>
         int Definitions { get; }
