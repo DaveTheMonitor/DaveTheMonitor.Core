@@ -22,7 +22,17 @@ namespace DaveTheMonitor.Core.Patches
 
             ICoreActor owner = ((ITMHand)__instance).Owner.GetCoreActor();
             ICoreHand hand = ___HandType == InventoryHand.Left ? owner.LeftHand : owner.RightHand;
-            owner.OnSwingEnd(hand, owner.Game.ItemRegistry.GetItem(___ItemID));
+            CoreItem item = owner.Game.ItemRegistry[___ItemID];
+            SwingTime time = item.GetSwingTime(SwingState.Complete);
+
+            var enumerator = owner.GetDataEnumerator();
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current is ActorData data)
+                {
+                    data.PostSwingEnd(hand, item, time);
+                }
+            }
         }
     }
 }

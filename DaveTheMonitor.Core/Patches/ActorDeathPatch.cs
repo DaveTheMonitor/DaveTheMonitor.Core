@@ -2,6 +2,7 @@
 using DaveTheMonitor.Core.Helpers;
 using DaveTheMonitor.Core.Plugin;
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
 using System.Collections.Generic;
@@ -30,7 +31,29 @@ namespace DaveTheMonitor.Core.Patches
 
             ICoreActor actor = ((ITMActor)__instance).GetCoreActor();
             ICoreActor coreAttacker = attacker?.GetCoreActor();
-            actor.OnDeath(deathType, coreAttacker, actor.Game.ItemRegistry.GetItem(weaponID), damage);
+            CoreItem item = actor.Game.ItemRegistry[weaponID];
+            AttackInfo attack = new AttackInfo(damage, deathType, Vector3.Zero);
+
+            var enumerator = actor.GetDataEnumerator();
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current is ActorData data)
+                {
+                    data.PostDeath(coreAttacker, item, attack);
+                }
+            }
+
+            if (coreAttacker != null)
+            {
+                enumerator = coreAttacker.GetDataEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.Current is ActorData data)
+                    {
+                        data.PostKillTarget(coreAttacker, item, attack);
+                    }
+                }
+            }
         }
     }
 }

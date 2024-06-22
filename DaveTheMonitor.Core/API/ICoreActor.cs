@@ -6,7 +6,6 @@ using StudioForge.BlockWorld;
 using StudioForge.Engine.GamerServices;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
-using System;
 
 namespace DaveTheMonitor.Core.API
 {
@@ -385,11 +384,34 @@ namespace DaveTheMonitor.Core.API
         bool CheckHit(BoundingSphere sphere, out float damageMultiplier, out bool isCritical);
 
         /// <summary>
-        /// Changes this actor's health.
+        /// Directly changes this actor's health without displaying it.
         /// </summary>
         /// <param name="amount">The amount of health to add or remove.</param>
-        /// <param name="triggerEvents">True if hurt and heal events should trigger.</param>
+        /// <param name="triggerEvents">If true, hurt and heal events will trigger.</param>
         void ChangeHealth(float amount, bool triggerEvents);
+
+        /// <summary>
+        /// Directly changes this actor's health without displaying it.
+        /// </summary>
+        /// <param name="amount">The amount of health to add or remove.</param>
+        /// <param name="actor">The actor responsible for the change.</param>
+        /// <param name="item">The item used.</param>
+        /// <param name="damageType">The damage type if the amount is negative.</param>
+        /// <param name="triggerEvents">If true, hurt and heal events will trigger.</param>
+        void ChangeHealth(float amount, ICoreActor actor, CoreItem item, DamageType damageType, bool triggerEvents);
+
+        /// <summary>
+        /// Deals damage to this actor as if they were attacked.
+        /// </summary>
+        /// <param name="attacker">The attacker.</param>
+        /// <param name="weapon">The weapon used.</param>
+        /// <param name="skillType">The skill used to deal damage.</param>
+        /// <param name="damage">The damage to deal.</param>
+        /// <param name="damageType">The type of damage to deal.</param>
+        /// <param name="attackVelocity">The attack's velocity.</param>
+        /// <param name="knockForce">The force of knockback.</param>
+        /// <param name="canBlockWithShield">If true, this attack's damage can be reduced with a shield.</param>
+        void Attack(ICoreActor attacker, CoreItem weapon, SkillType skillType, float damage, DamageType damageType, Vector3 attackVelocity, Vector3 knockForce, bool canBlockWithShield);
 
         /// <summary>
         /// Kills this actor.
@@ -404,71 +426,6 @@ namespace DaveTheMonitor.Core.API
         /// <param name="weapon">The weapon the attacker used to kill this actor.</param>
         /// <param name="damage">The amount of damage dealt to kill this actor.</param>
         void Kill(DamageType deathType, ICoreActor attacker, CoreItem weapon, float damage);
-
-        /// <summary>
-        /// Called when this actor is killed.
-        /// </summary>
-        /// <param name="deathType">The type of damage dealt.</param>
-        /// <param name="attacker">The attacker.</param>
-        /// <param name="weapon">The attacker's weapon.</param>
-        /// <param name="damage">The damage dealt.</param>
-        void OnDeath(DamageType deathType, ICoreActor attacker, CoreItem weapon, float damage);
-
-        /// <summary>
-        /// Called when this actor kills their target.
-        /// </summary>
-        /// <param name="deathType">The type of damage dealt.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="weapon">This actor's weapon.</param>
-        /// <param name="damage">The damage dealt.</param>
-        void OnKill(DamageType deathType, ICoreActor target, CoreItem weapon, float damage);
-
-        /// <summary>
-        /// Called when this actor is hurt.
-        /// </summary>
-        /// <param name="damageType">The type of damage dealt.</param>
-        /// <param name="attacker">The attacker.</param>
-        /// <param name="weapon">The attacker's weapon.</param>
-        /// <param name="damage">The damage dealt.</param>
-        void OnHurt(DamageType damageType, ICoreActor attacker, CoreItem weapon, float damage);
-
-        /// <summary>
-        /// Called when this actor attacks their target.
-        /// </summary>
-        /// <param name="damageType">The type of damage dealt.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="weapon">This actor's weapon.</param>
-        /// <param name="damage">The damage dealt.</param>
-        void OnAttack(DamageType damageType, ICoreActor target, CoreItem weapon, float damage);
-
-        /// <summary>
-        /// Called when this actor is healed.
-        /// </summary>
-        /// <param name="health">The amount of health gained.</param>
-        /// <param name="healer">The healer.</param>
-        /// <param name="item">The item used.</param>
-        void OnHeal(float health, ICoreActor healer, CoreItem item);
-
-        /// <summary>
-        /// Called when this actor's swing starts.
-        /// </summary>
-        /// <param name="hand">The hand that is swinging.</param>
-        /// <param name="item">The item being swung.</param>
-        void OnSwingStart(ICoreHand hand, CoreItem item);
-
-        /// <summary>
-        /// Called when this actor's swing fully extends.
-        /// </summary>
-        /// <param name="hand">The hand that is swinging.</param>
-        /// <param name="item">The item being swung.</param>
-        void OnSwingExtended(ICoreHand hand, CoreItem item);
-
-        /// <summary>
-        /// Called when this actor's swing ends.
-        /// </summary>
-        /// <param name="hand">The hand that is swinging.</param>
-        /// <param name="item">The item being swung.</param>
-        void OnSwingEnd(ICoreHand hand, CoreItem item);
 
         /// <summary>
         /// <para>Plays the specified animation state for this actor, cancelling the current animation.</para>

@@ -1,10 +1,5 @@
 ﻿using StudioForge.TotalMiner;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DaveTheMonitor.Core.API
 {
@@ -57,28 +52,36 @@ namespace DaveTheMonitor.Core.API
             
         }
 
+        public virtual AttackInfo? PreAttacked(ICoreActor attacker, CoreItem weapon, AttackInfo attack, bool fatal)
+        {
+            return null;
+        }
+
         /// <summary>
         /// Called after this actor is attacked by another actor.
         /// </summary>
         /// <param name="attacker">The attacker.</param>
-        /// <param name="damageType">The type of damage dealt.</param>
         /// <param name="weapon">The weapon used.</param>
-        /// <param name="damage">The damage dealt. This may be zero if the attack was blocked (either by armor or a shield).</param>
+        /// <param name="attack">The attack.</param>
         /// <param name="fatal">True if this damage resulted in the death of the actor.</param>
-        public virtual void PostAttacked(ICoreActor attacker, DamageType damageType, CoreItem weapon, float damage, bool fatal)
+        public virtual void PostAttacked(ICoreActor attacker, CoreItem weapon, AttackInfo attack, bool fatal)
         {
 
+        }
+
+        public virtual AttackInfo? PreHurt(ICoreActor attacker, CoreItem weapon, AttackInfo attack, bool fatal)
+        {
+            return null;
         }
 
         /// <summary>
         /// Called after this actor is hurt by any damage.
         /// </summary>
         /// <param name="attacker">The attacker, or null if there is no attacker.</param>
-        /// <param name="damageType">The type of damage dealt.</param>
         /// <param name="weapon">The weapon used, or <see cref="TMItems.None"/> if no weapon was used.</param>
-        /// <param name="damage">The damage dealt. This may be zero if the attack was blocked (either by armor or a shield).</param>
+        /// <param name="attack">The attack.</param>
         /// <param name="fatal">True if this damage resulted in the death of the actor.</param>
-        public virtual void PostHurt(ICoreActor attacker, DamageType damageType, CoreItem weapon, float damage, bool fatal)
+        public virtual void PostHurt(ICoreActor attacker, CoreItem weapon, AttackInfo attack, bool fatal)
         {
 
         }
@@ -87,23 +90,26 @@ namespace DaveTheMonitor.Core.API
         /// Called after this actor is killed.
         /// </summary>
         /// <param name="attacker">The attacker, or null if there is no attacker.</param>
-        /// <param name="damageType">The type of damage dealt.</param>
         /// <param name="weapon">The weapon used, or <see cref="TMItems.None"/> if no weapon was used.</param>
-        /// <param name="damage">The damage dealt.</param>
-        public virtual void PostKilled(ICoreActor attacker, DamageType damageType, CoreItem weapon, float damage)
+        /// <param name="attack">The attack.</param>
+        public virtual void PostDeath(ICoreActor attacker, CoreItem weapon, AttackInfo attack)
         {
 
+        }
+
+        public virtual AttackInfo? PreAttackTarget(ICoreActor target, CoreItem weapon, AttackInfo attack, bool fatal)
+        {
+            return null;
         }
 
         /// <summary>
         /// Called after this actor attacks another actor.
         /// </summary>
         /// <param name="target">The target.</param>
-        /// <param name="damageType">The type of damage dealt.</param>
         /// <param name="weapon">The weapon used.</param>
-        /// <param name="damage">The damage dealt. This may be zero if the attack was blocked (either by armor or a shield).</param>
+        /// <param name="attack">The attack.</param>
         /// <param name="fatal">True if this damage resulted in the death of the target.</param>
-        public virtual void PostAttackTarget(ICoreActor target, DamageType damageType, CoreItem weapon, float damage, bool fatal)
+        public virtual void PostAttackTarget(ICoreActor target, CoreItem weapon, AttackInfo attack, bool fatal)
         {
 
         }
@@ -112,10 +118,9 @@ namespace DaveTheMonitor.Core.API
         /// Called after this actor kills another actor.
         /// </summary>
         /// <param name="target">The target.</param>
-        /// <param name="damageType">The type of damage dealt.</param>
         /// <param name="weapon">The weapon used, or <see cref="TMItems.None"/> if no weapon was used.</param>
-        /// <param name="damage">The damage dealt.</param>
-        public virtual void PostKillTarget(ICoreActor target, DamageType damageType, CoreItem weapon, float damage)
+        /// <param name="attack">The attack.</param>
+        public virtual void PostKillTarget(ICoreActor target, CoreItem weapon, AttackInfo attack)
         {
 
         }

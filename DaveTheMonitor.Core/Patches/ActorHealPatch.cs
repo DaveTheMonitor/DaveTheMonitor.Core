@@ -20,7 +20,16 @@ namespace DaveTheMonitor.Core.Patches
             ICoreActor actor = ((ITMActor)__instance).GetCoreActor();
             ICoreActor coreHealer = healer?.GetCoreActor();
             float health = Globals1.ItemData[(int)itemID].HealPower;
-            actor.OnHeal(health, coreHealer, actor.Game.ItemRegistry.GetItem(itemID));
+            CoreItem item = actor.Game.ItemRegistry[itemID];
+
+            var enumerator = actor.GetDataEnumerator();
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current is ActorData data)
+                {
+                    data.PostHeal(coreHealer, item, health);
+                }
+            }
         }
     }
 }

@@ -20,6 +20,8 @@ namespace DaveTheMonitor.Core
 {
     internal abstract class Actor : ICoreActor, IHasMovement
     {
+        private static Func<ITMActor, float, Vector3, float> _applyShieldBlock
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:ApplyShieldBlock").CreateInvoker<Func<ITMActor, float, Vector3, float>>();
         public ITMActor TMActor { get; private set; }
         public ICoreGame Game { get; private set; }
         public ICoreWorld World { get; private set; }
@@ -324,6 +326,11 @@ namespace DaveTheMonitor.Core
 
         public void ChangeHealth(float amount, bool triggerEvents)
         {
+            ChangeHealth(amount, null, TMItems.None, DamageType.Unknown, triggerEvents);
+        }
+
+        public void ChangeHealth(float amount, ICoreActor actor, CoreItem item, DamageType damageType, bool triggerEvents)
+        {
             if (amount > 0 && Health < MaxHealth)
             {
                 TMActor.Health += amount;
@@ -334,20 +341,112 @@ namespace DaveTheMonitor.Core
 
                 if (triggerEvents)
                 {
-                    OnHeal(amount, null, TMItems.None);
+                    foreach (ICoreData<ICoreActor> data in Data)
+                    {
+                        if (data is ActorData actorData)
+                        {
+                            actorData.PostHeal(actor, item, amount);
+                        }
+                    }
                 }
             }
             else if (amount < 0)
             {
                 TMActor.Health += amount;
+                bool fatal;
                 if (TMActor.Health <= 0)
                 {
-                    _dieInvoker(TMActor, DamageType.Unknown, null, Item.None, -amount);
+                    _dieInvoker(TMActor, damageType, actor.TMActor, item.ItemType, -amount);
+                    fatal = true;
                 }
-                
+                else
+                {
+                    fatal = false;
+                }
+
                 if (triggerEvents)
                 {
-                    OnHurt(DamageType.Unknown, null, TMItems.None, 0);
+                    AttackInfo attack = new AttackInfo(-amount, damageType, Vector3.Zero);
+                    foreach (ICoreData<ICoreActor> data in Data)
+                    {
+                        if (data is ActorData actorData)
+                        {
+                            actorData.PostHurt(actor, item, attack, fatal);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void Attack(ICoreActor attacker, CoreItem weapon, SkillType skillType, float damage, DamageType damageType, Vector3 attackVelocity, Vector3 knockForce, bool canBlockWithShield)
+        {
+            if (damage <= 0)
+            {
+                return;
+            }
+
+            if (canBlockWithShield)
+            {
+                float finalDamage = _applyShieldBlock(TMActor, damage, attackVelocity);
+                if (finalDamage < damage)
+                {
+                    damageType = DamageType.ShieldDeflect;
+                }
+                damage = finalDamage;
+            }
+
+            if (attacker != null)
+            {
+                AttackInfo attack = new AttackInfo(damage, damageType, knockForce);
+
+                var enumerator = attacker.GetDataEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.Current is ActorData actorData)
+                    {
+                        AttackInfo? result = actorData.PreAttackTarget(this, weapon, attack, attack.Damage >= Health);
+                        if (result.HasValue)
+                        {
+                            attack = result.Value;
+                        }
+                    }
+                }
+
+                foreach (ICoreData<ICoreActor> data in Data)
+                {
+                    if (data is ActorData actorData)
+                    {
+                        AttackInfo? result = actorData.PreAttacked(attacker, weapon, attack, attack.Damage >= Health);
+                        if (result.HasValue)
+                        {
+                            attack = result.Value;
+                        }
+                    }
+                }
+            }
+
+            damage = TakeDamageAndDisplay(damageType, damage, knockForce, attacker, weapon, skillType);
+
+            if (attacker != null)
+            {
+                AttackInfo attack = new AttackInfo(damage, damageType, knockForce);
+                bool fatal = Health <= 0;
+
+                var enumerator = attacker.GetDataEnumerator();
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.Current is ActorData actorData)
+                    {
+                        actorData.PostAttackTarget(this, weapon, attack, fatal);
+                    }
+                }
+
+                foreach (ICoreData<ICoreActor> data in Data)
+                {
+                    if (data is ActorData actorData)
+                    {
+                        actorData.PostAttacked(this, weapon, attack, fatal);
+                    }
                 }
             }
         }
@@ -360,127 +459,6 @@ namespace DaveTheMonitor.Core
         public void Kill(DamageType deathType, ICoreActor attacker, CoreItem weapon, float damage)
         {
             _dieInvoker(TMActor, deathType, attacker.TMActor, weapon.ItemType, damage);
-        }
-
-        public virtual void OnDeath(DamageType deathType, ICoreActor attacker, CoreItem weapon, float damage)
-        {
-            if (attacker != null)
-            {
-                attacker.OnKill(deathType, this, weapon, damage);
-            }
-
-            foreach (ICoreData<ICoreActor> data in Data)
-            {
-                if (data is ActorData actorData)
-                {
-                    actorData.PostKilled(attacker, deathType, weapon, damage);
-                }
-            }
-        }
-
-        public virtual void OnKill(DamageType deathType, ICoreActor target, CoreItem weapon, float damage)
-        {
-            foreach (ICoreData<ICoreActor> data in Data)
-            {
-                if (data is ActorData actorData)
-                {
-                    actorData.PostKillTarget(target, deathType, weapon, damage);
-                }
-            }
-        }
-
-        public virtual void OnHurt(DamageType damageType, ICoreActor attacker, CoreItem weapon, float damage)
-        {
-            if (!Game.CombatEnabled)
-            {
-                return;
-            }
-
-            if (attacker != null)
-            {
-                attacker.OnAttack(damageType, this, weapon, damage);
-                foreach (ICoreData<ICoreActor> data in Data)
-                {
-                    if (data is ActorData actorData)
-                    {
-                        actorData.PostAttacked(attacker, damageType, weapon, damage, true);
-                    }
-                }
-            }
-
-            if (damage > 0)
-            {
-                foreach (ICoreData<ICoreActor> data in Data)
-                {
-                    if (data is ActorData actorData)
-                    {
-                        actorData.PostHurt(attacker, damageType, weapon, damage, Health <= 0);
-                    }
-                }
-            }
-        }
-
-        public virtual void OnAttack(DamageType damageType, ICoreActor target, CoreItem weapon, float damage)
-        {
-            if (!Game.CombatEnabled)
-            {
-                return;
-            }
-
-            foreach (ICoreData<ICoreActor> data in Data)
-            {
-                if (data is ActorData actorData)
-                {
-                    actorData.PostAttackTarget(target, damageType, weapon, damage, target.Health <= 0);
-                }
-            }
-        }
-
-        public virtual void OnHeal(float health, ICoreActor healer, CoreItem item)
-        {
-            foreach (ICoreData<ICoreActor> data in Data)
-            {
-                if (data is ActorData actorData)
-                {
-                    actorData.PostHeal(healer, item, health);
-                }
-            }
-        }
-
-        public void OnSwingStart(ICoreHand hand, CoreItem item)
-        {
-            SwingTime time = item.GetSwingTime(SwingState.None);
-            foreach (ICoreData<ICoreActor> data in Data)
-            {
-                if (data is ActorData actorData)
-                {
-                    actorData.PostSwingStart(hand, item, time);
-                }
-            }
-        }
-
-        public void OnSwingExtended(ICoreHand hand, CoreItem item)
-        {
-            SwingTime time = item.GetSwingTime(SwingState.Extended);
-            foreach (ICoreData<ICoreActor> data in Data)
-            {
-                if (data is ActorData actorData)
-                {
-                    actorData.PostSwingExtend(hand, item, time);
-                }
-            }
-        }
-
-        public void OnSwingEnd(ICoreHand hand, CoreItem item)
-        {
-            SwingTime time = item.GetSwingTime(SwingState.Complete);
-            foreach (ICoreData<ICoreActor> data in Data)
-            {
-                if (data is ActorData actorData)
-                {
-                    actorData.PostSwingEnd(hand, item, time);
-                }
-            }
         }
 
         public bool PlayAnimation(string id)
