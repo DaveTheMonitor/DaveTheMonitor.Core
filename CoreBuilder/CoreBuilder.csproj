@@ -1,18 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
-    <PlatformTarget>x64</PlatformTarget>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.1.303" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\DaveTheMonitor.Core.Biomes\DaveTheMonitor.Core.Biomes.csproj" />
     <ProjectReference Include="..\DaveTheMonitor.Core.Effects\DaveTheMonitor.Core.Effects.csproj" />
+    <ProjectReference Include="..\DaveTheMonitor.Core.Loader\DaveTheMonitor.Core.Loader.csproj" />
     <ProjectReference Include="..\DaveTheMonitor.Core.Particles\DaveTheMonitor.Core.Particles.csproj" />
     <ProjectReference Include="..\DaveTheMonitor.Core\DaveTheMonitor.Core.csproj" />
   </ItemGroup>
+
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="DaveTheMonitor.Scripts">
+      <HintPath>..\DaveTheMonitor.Core\Assembly\DaveTheMonitor.Scripts.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="StudioForge.BlockWorld">
       <HintPath>..\DaveTheMonitor.Core\Assembly\StudioForge.BlockWorld.dll</HintPath>
       <Private>false</Private>
@@ -58,7 +69,9 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="echo $(SolutionDir)" />
+    <Exec Command="xcopy &quot;$(TargetDir)DaveTheMonitor.Core.dll&quot; &quot;$(TargetDir)Modules\&quot; /y&#xD;&#xA;xcopy &quot;$(TargetDir)DaveTheMonitor.Core.xml&quot; &quot;$(TargetDir)Modules\&quot; /y&#xD;&#xA;xcopy &quot;$(TargetDir)DaveTheMonitor.Scripts.dll&quot; &quot;$(TargetDir)Modules\Scripts\&quot; /y&#xD;&#xA;xcopy &quot;$(TargetDir)DaveTheMonitor.Core.Biomes.dll&quot; &quot;$(TargetDir)Modules\Biomes\&quot; /y&#xD;&#xA;xcopy &quot;$(TargetDir)DaveTheMonitor.Core.Effects.dll&quot; &quot;$(TargetDir)Modules\Effects\&quot; /y&#xD;&#xA;xcopy &quot;$(TargetDir)DaveTheMonitor.Core.Particles.dll&quot; &quot;$(TargetDir)Modules\Particles\&quot; /y" />
   </Target>
+
 </Project>
