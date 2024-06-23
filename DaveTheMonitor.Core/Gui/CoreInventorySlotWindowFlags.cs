@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DaveTheMonitor.Core.Gui
+﻿namespace DaveTheMonitor.Core.Gui
 {
     /// <summary>
     /// Flags for <see cref="CoreInventorySlotWindow"/> display.

@@ -1,18 +1,12 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Helpers;
 using HarmonyLib;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StudioForge.Engine;
 using StudioForge.Engine.GUI;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DaveTheMonitor.Core.Gui
 {

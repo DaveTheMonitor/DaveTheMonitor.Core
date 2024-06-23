@@ -3,11 +3,6 @@ using Microsoft.Xna.Framework;
 using StudioForge.Engine.GUI;
 using StudioForge.TotalMiner.API;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DaveTheMonitor.Core.Gui
 {
