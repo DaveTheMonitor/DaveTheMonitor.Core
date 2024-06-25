@@ -149,7 +149,7 @@ namespace DaveTheMonitor.Core.Plugin
             _game.ActorRegistry.UpdateGlobalActorData();
 
             // TODO: support depth texture?
-            Texture2D texture = _game.StitchModItemTextures(game.TexturePack.ItemTexture, game.TexturePack.ItemTextureSize(), out bool changed);
+            Texture2D texture = _game.StitchModItemTextures(game.TexturePack, game.TexturePack.ItemTexture, game.TexturePack.ItemTextureSize(), out bool changed);
             if (changed)
             {
                 game.TexturePack.ItemTexture.Dispose();

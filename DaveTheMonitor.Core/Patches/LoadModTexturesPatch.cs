@@ -22,7 +22,7 @@ namespace DaveTheMonitor.Core.Patches
             }
             ITMTexturePack tp = (ITMTexturePack)__instance;
 
-            Texture2D texture = CorePlugin.Instance._game.StitchModItemTextures(___ItemTexture, tp.ItemTextureSize(), out bool changed);
+            Texture2D texture = CorePlugin.Instance._game.StitchModItemTextures(tp, ___ItemTexture, tp.ItemTextureSize(), out bool changed);
             if (changed)
             {
                 ___ItemTexture.Dispose();

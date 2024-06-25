@@ -284,7 +284,7 @@ namespace DaveTheMonitor.Core
             }
         }
 
-        internal Texture2D StitchModItemTextures(Texture2D atlas, int size, out bool changed)
+        internal Texture2D StitchModItemTextures(ITMTexturePack texturePack, Texture2D atlas, int size, out bool changed)
         {
             int totalItems = 0;
             foreach (CoreItem item in ItemRegistry)
@@ -305,13 +305,13 @@ namespace DaveTheMonitor.Core
             Color[] data = new Color[atlas.Width * atlas.Height];
             atlas.GetData(data, 0, data.Length);
             newAtlas.SetData(data, 0, data.Length);
-            StitchItemAtlas(newAtlas, size);
+            StitchItemAtlas(texturePack, newAtlas, size);
 
             changed = true;
             return newAtlas;
         }
 
-        private void StitchItemAtlas(Texture2D dest, int size)
+        private void StitchItemAtlas(ITMTexturePack texturePack, Texture2D dest, int size)
         {
             int width = dest.Width;
             int height = dest.Height;
@@ -331,7 +331,7 @@ namespace DaveTheMonitor.Core
                     throw new InvalidOperationException($"Item texture must be {size}x{size}");
                 }
 
-                Rectangle destRect = TexturePack.ItemSrcRect((Item)item.NumId);
+                Rectangle destRect = texturePack.ItemSrcRect((Item)item.NumId);
                 Color[] data = new Color[texture.Width * texture.Height];
                 texture.GetData(0, rect, data, 0, data.Length);
 
