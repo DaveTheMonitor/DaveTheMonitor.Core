@@ -1,5 +1,6 @@
 ﻿using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Components;
+using DaveTheMonitor.Core.Json;
 using Microsoft.Xna.Framework;
 using StudioForge.BlockWorld;
 using StudioForge.TotalMiner;
@@ -999,18 +1000,18 @@ namespace DaveTheMonitor.Core.Helpers
         {
             if (element.ValueKind != JsonValueKind.Object)
             {
-                throw new InvalidOperationException("Json must be an object.");
+                throw new InvalidCoreJsonException("Json must be an object.");
             }
 
             ModVersion version = GetVersionProperty(element, "Version") ?? new ModVersion(0, 0, 0);
             if (version == new ModVersion(0, 0, 0))
             {
-                throw new InvalidOperationException("Version must be specified.");
+                throw new InvalidCoreJsonException("Version must be specified.");
             }
 
             if (!element.TryGetProperty("Components", out JsonElement componentsElement))
             {
-                throw new InvalidOperationException("Json must contain components.");
+                throw new InvalidCoreJsonException("Json must contain components.");
             }
 
             ComponentCollection components = ComponentCollection.ReadFromJson(version, componentsElement, type, serializerOptions);

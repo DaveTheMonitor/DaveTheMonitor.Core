@@ -1,3 +1,4 @@
+﻿using DaveTheMonitor.Core.Json;
 ﻿using DaveTheMonitor.Core.Plugin;
 using StudioForge.TotalMiner;
 using System;
@@ -17,7 +18,7 @@ namespace DaveTheMonitor.Core.Components
         {
             if (element.ValueKind != JsonValueKind.Object)
             {
-                throw new InvalidOperationException("ComponentCollection must be an object.");
+                throw new InvalidCoreJsonException("ComponentCollection must be an object.");
             }
 
             ComponentCollection components = new ComponentCollection();

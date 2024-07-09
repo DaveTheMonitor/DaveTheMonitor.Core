@@ -2,6 +2,7 @@
 using DaveTheMonitor.Core.Components;
 using DaveTheMonitor.Core.Effects.Components;
 using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Json;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.Engine;
@@ -65,7 +66,7 @@ namespace DaveTheMonitor.Core.Effects
 
             if (!components.HasComponent<EffectDefinitionComponent>())
             {
-                throw new InvalidOperationException("Effect must have a Definition component.");
+                throw new InvalidCoreJsonException("Effect must have a Definition component.");
             }
 
             return new JsonActorEffect(components);

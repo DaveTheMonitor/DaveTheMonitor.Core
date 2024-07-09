@@ -2,6 +2,7 @@
 using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Components;
 using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Json;
 using DaveTheMonitor.Core.Particles.Components;
 using Microsoft.Xna.Framework;
 using StudioForge.Engine;
@@ -43,7 +44,7 @@ namespace DaveTheMonitor.Core.Particles
 
             if (!components.HasComponent<ParticleDefinitionComponent>())
             {
-                throw new InvalidOperationException("Particle must have a Definition component.");
+                throw new InvalidCoreJsonException("Particle must have a Definition component.");
             }
 
             return new JsonParticle(components);
