@@ -16,6 +16,13 @@ namespace DaveTheMonitor.Core.API
         CoreItem this[Item item] { get; }
 
         /// <summary>
+        /// Indexer for blocks, equivalent to <see cref="GetBlock(Block)"/>.
+        /// </summary>
+        /// <param name="block">The block type.</param>
+        /// <returns>The <see cref="CoreItem"/> definition for the specified <see cref="Block"/>.</returns>
+        CoreItem this[Block block] { get; }
+
+        /// <summary>
         /// Initializes all item definitions from <see cref="ItemDataXML"/>.
         /// </summary>
         /// <param name="data">The data to initialize from.</param>

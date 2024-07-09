@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework.Graphics;
 using StudioForge.BlockWorld;
 using StudioForge.TotalMiner;
 using StudioForge.TotalMiner.API;
+using System;
+using System.Linq;
 
 namespace DaveTheMonitor.Core.Helpers
 {
@@ -127,6 +129,36 @@ namespace DaveTheMonitor.Core.Helpers
         public static Rectangle GetSrcRect(this ITMTexturePack texturePack, CoreItem item)
         {
             return texturePack.ItemSrcRect(item.ItemType);
+        }
+
+        #endregion
+
+        #region ITMInventory
+
+        private static Action<ITMInventory, InventoryItem, int> _flagItemChanged =
+            AccessTools.Method("StudioForge.TotalMiner.Inventory:FlagItemChanged").CreateInvoker<Action<ITMInventory, InventoryItem, int>>();
+
+        private static AccessTools.FieldRef<object, bool> _hasItemsChanged =
+            AccessTools.FieldRefAccess<bool>("StudioForge.TotalMiner.Inventory:HasItemsChanged");
+
+        /// <summary>
+        /// Sets the item at the specified slot.
+        /// </summary>
+        /// <param name="inventory">The inventory.</param>
+        /// <param name="slot">The slot index to set.</param>
+        /// <param name="item">The item to set.</param>
+        public static void SetItem(this ITMInventory inventory, int slot, InventoryItem item)
+        {
+            if (slot >= inventory.Items.Count)
+            {
+                inventory.Items.EnsureCapacity(slot);
+                int count = slot - inventory.Items.Count + 1;
+                inventory.Items.AddRange(Enumerable.Repeat(InventoryItem.Empty, count));
+            }
+            InventoryItem old = inventory.Items[slot];
+            inventory.Items[slot] = item;
+            _flagItemChanged(inventory, old, slot);
+            _hasItemsChanged(inventory) = true;
         }
 
         #endregion

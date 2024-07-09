@@ -11,12 +11,9 @@ namespace DaveTheMonitor.Core.Components
         /// Default usage types:
         /// Any,
         /// Item,
-        /// Block,
         /// Actor,
         /// Effect,
-        /// Particle,
-        /// Vehicle,
-        /// Boss
+        /// Particle
         /// </summary>
         public string[] Usage { get; set; }
 

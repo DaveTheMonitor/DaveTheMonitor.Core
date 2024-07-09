@@ -125,6 +125,7 @@ namespace DaveTheMonitor.Core.Gui
         {
             _start = start;
             _end = end;
+            _flags = flags;
             ItemCount = end - start;
             Columns = columns;
             Rows = (int)MathF.Ceiling(ItemCount / (float)columns);

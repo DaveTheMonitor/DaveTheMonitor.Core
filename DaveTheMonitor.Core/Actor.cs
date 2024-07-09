@@ -20,8 +20,6 @@ namespace DaveTheMonitor.Core
 {
     internal abstract class Actor : ICoreActor, IHasMovement
     {
-        private static Func<ITMActor, float, Vector3, float> _applyShieldBlock
-            = AccessTools.Method("StudioForge.TotalMiner.Actor:ApplyShieldBlock").CreateInvoker<Func<ITMActor, float, Vector3, float>>();
         public ITMActor TMActor { get; private set; }
         public ICoreGame Game { get; private set; }
         public ICoreWorld World { get; private set; }
@@ -31,19 +29,18 @@ namespace DaveTheMonitor.Core
 
         #region Invokers
 
-        private static ActorDieInvoker _dieInvoker;
+        private static ActorDieInvoker _dieInvoker
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:Die").CreateInvoker<ActorDieInvoker>();
+        private static Func<ITMActor, float, Vector3, float> _applyShieldBlock
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:ApplyShieldBlock").CreateInvoker<Func<ITMActor, float, Vector3, float>>();
+        private static Func<ITMActor, int, ushort, bool> _onItemWithDurabilityUsed
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:OnItemWithDurabilityUsed").CreateInvoker<Func<ITMActor, int, ushort, bool>>();
 
         #endregion
 
         protected CoreDataCollection<ICoreActor> Data;
 
         private float _timeOffGround;
-
-        static Actor()
-        {
-            Type actor = AccessTools.TypeByName("StudioForge.TotalMiner.Actor");
-            _dieInvoker = AccessTools.Method(actor, "Die").CreateInvoker<ActorDieInvoker>();
-        }
 
         #region Scripts
 
@@ -356,7 +353,7 @@ namespace DaveTheMonitor.Core
                 bool fatal;
                 if (TMActor.Health <= 0)
                 {
-                    _dieInvoker(TMActor, damageType, actor.TMActor, item.ItemType, -amount);
+                    _dieInvoker(TMActor, damageType, actor?.TMActor, item.ItemType, -amount);
                     fatal = true;
                 }
                 else
@@ -378,11 +375,11 @@ namespace DaveTheMonitor.Core
             }
         }
 
-        public void Attack(ICoreActor attacker, CoreItem weapon, SkillType skillType, float damage, DamageType damageType, Vector3 attackVelocity, Vector3 knockForce, bool canBlockWithShield)
+        public AttackInfo Attack(ICoreActor attacker, CoreItem weapon, SkillType skillType, float damage, DamageType damageType, Vector3 attackVelocity, Vector3 knockForce, bool canBlockWithShield)
         {
             if (damage <= 0)
             {
-                return;
+                return new AttackInfo(0, damageType, Vector3.Zero);
             }
 
             if (canBlockWithShield)
@@ -395,10 +392,9 @@ namespace DaveTheMonitor.Core
                 damage = finalDamage;
             }
 
+            AttackInfo attack = new AttackInfo(damage, damageType, knockForce);
             if (attacker != null)
             {
-                AttackInfo attack = new AttackInfo(damage, damageType, knockForce);
-
                 var enumerator = attacker.GetDataEnumerator();
                 while (enumerator.MoveNext())
                 {
@@ -425,11 +421,10 @@ namespace DaveTheMonitor.Core
                 }
             }
 
-            damage = TakeDamageAndDisplay(damageType, damage, knockForce, attacker, weapon, skillType);
+            attack.Damage = TakeDamageAndDisplay(damageType, damage, knockForce, attacker, weapon, skillType);
 
             if (attacker != null)
             {
-                AttackInfo attack = new AttackInfo(damage, damageType, knockForce);
                 bool fatal = Health <= 0;
 
                 var enumerator = attacker.GetDataEnumerator();
@@ -449,6 +444,10 @@ namespace DaveTheMonitor.Core
                     }
                 }
             }
+
+            TargetingSystem.Target((IActorBehaviour)attacker.TMActor, (IActorBehaviour)TMActor);
+
+            return attack;
         }
 
         public void Kill()
@@ -474,6 +473,59 @@ namespace DaveTheMonitor.Core
         public bool IsOnGround(float coyoteTime)
         {
             return Grounded || _timeOffGround < coyoteTime;
+        }
+
+        public void DamageItem(EquipIndex slot, int damage)
+        {
+            if (!Game.IsFiniteResources)
+            {
+                return;
+            }
+
+            int slotId = slot switch
+            {
+                EquipIndex.LeftHand => LeftHand.HandIndex,
+                EquipIndex.RightHand => RightHand.HandIndex,
+                EquipIndex.Head => Inventory.EquipIndexStart,
+                EquipIndex.Neck => Inventory.EquipIndexStart + 1,
+                EquipIndex.Body => Inventory.EquipIndexStart + 2,
+                EquipIndex.Legs => Inventory.EquipIndexStart + 3,
+                EquipIndex.Feet => Inventory.EquipIndexStart + 4,
+                EquipIndex.LeftSide => Inventory.EquipIndexStart + 5,
+                EquipIndex.RightSide => Inventory.EquipIndexStart + 6,
+                _ => -1
+            };
+
+            if (slotId == -1)
+            {
+                return;
+            }
+
+            DamageItem(slotId, damage);
+        }
+
+        public void DamageItem(int slot, int damage)
+        {
+            if (!Game.IsFiniteResources)
+            {
+                return;
+            }
+
+            InventoryItem item = slot < Inventory.Items.Count ? Inventory.Items[slot] : InventoryItem.Empty;
+            if (item.Durability <= 0)
+            {
+                return;
+            }
+
+            Item itemId = item.ItemID;
+            // These items use durability for data rather than actual
+            // durability.
+            if (itemId == Item.Blueprint || itemId == Item.Wisdom || itemId == Item.Book || itemId == Item.Key || itemId == Item.Clipboard)
+            {
+                return;
+            }
+
+            _onItemWithDurabilityUsed(TMActor, slot, (ushort)damage);
         }
 
         public void Update()

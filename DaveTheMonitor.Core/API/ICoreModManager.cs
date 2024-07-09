@@ -34,6 +34,13 @@ namespace DaveTheMonitor.Core.API
         IEnumerable<ICoreMod> GetAllActiveMods();
 
         /// <summary>
+        /// Gets an <see cref="IEnumerable{T}"/> of all active mods of the specified type.
+        /// </summary>
+        /// <param name="modType">The type of mod to get.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of all active mods.</returns>
+        IEnumerable<ICoreMod> GetAllActiveMods(ModType modType);
+
+        /// <summary>
         /// Gets an <see cref="IEnumerable{T}"/> of all active mods with a plugin.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of all active mods with a plugin.</returns>
@@ -49,14 +56,14 @@ namespace DaveTheMonitor.Core.API
         /// <summary>
         /// Gets the <see cref="ICoreMod"/> that defines the specified <see cref="ActorType"/>.
         /// </summary>
-        /// <param name="actor">The actor assetType.</param>
+        /// <param name="actor">The actor type.</param>
         /// <returns>The <see cref="ICoreMod"/> that defines the specified <see cref="ActorType"/>.</returns>
         ICoreMod GetDefiningMod(ActorType actor);
 
         /// <summary>
         /// Gets the <see cref="ICoreMod"/> that defines the specified <see cref="Item"/>.
         /// </summary>
-        /// <param name="item">The item assetType.</param>
+        /// <param name="item">The item type.</param>
         /// <returns>The <see cref="ICoreMod"/> that defines the specified <see cref="Item"/>.</returns>
         ICoreMod GetDefiningMod(Item item);
 

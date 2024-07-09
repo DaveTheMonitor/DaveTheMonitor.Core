@@ -248,6 +248,26 @@ namespace DaveTheMonitor.Core
             return Id;
         }
 
+        /// <summary>
+        /// Gets the <see cref="CoreItem"/> with the specified ID.
+        /// </summary>
+        /// <param name="id">The ID of the item to get.</param>
+        /// <returns>The <see cref="CoreItem"/> with the specified ID.</returns>
+        public static CoreItem Get(string id)
+        {
+            return CorePlugin.Instance.Game.ItemRegistry[id];
+        }
+
+        /// <summary>
+        /// Gets the <see cref="CoreItem"/> for the specified <see cref="Item"/>.
+        /// </summary>
+        /// <param name="item">The item type.</param>
+        /// <returns>The <see cref="CoreItem"/> for the specified <see cref="Item"/>.</returns>
+        public static CoreItem Get(Item item)
+        {
+            return CorePlugin.Instance.Game.ItemRegistry[item];
+        }
+
         private CoreItem(Item item, ComponentCollection components)
         {
             ItemType = item;

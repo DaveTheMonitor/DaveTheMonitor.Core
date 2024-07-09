@@ -44,6 +44,11 @@ namespace DaveTheMonitor.Core.Effects
 
         public void Update(ICoreActor actor)
         {
+            if (!actor.IsActive)
+            {
+                return;
+            }
+
             actor.Effects().Update();
         }
 

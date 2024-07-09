@@ -43,6 +43,10 @@ namespace DaveTheMonitor.Core.Effects
                 ActorEffect existing = GetEffect(definition);
                 if (existing != null)
                 {
+                    if (existing.Age < duration)
+                    {
+                        existing.SetDuration(duration);
+                    }
                     return existing;
                 }
             }

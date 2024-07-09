@@ -59,11 +59,10 @@ namespace DaveTheMonitor.Core.Gui
         /// </summary>
         public InventoryItem Item
         {
-            get => _inventory.Items.Count > _slot ? _inventory.Items[_slot] : InventoryItem.Empty;
+            get => _slot < _inventory.Items.Count ? _inventory.Items[_slot] : InventoryItem.Empty;
             set
             {
-                _inventory.Items.EnsureCapacity(_slot);
-                _inventory.Items[_slot] = value;
+                _inventory.SetItem(_slot, value);
             }
         }
 

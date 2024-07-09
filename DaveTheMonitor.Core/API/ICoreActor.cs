@@ -411,7 +411,8 @@ namespace DaveTheMonitor.Core.API
         /// <param name="attackVelocity">The attack's velocity.</param>
         /// <param name="knockForce">The force of knockback.</param>
         /// <param name="canBlockWithShield">If true, this attack's damage can be reduced with a shield.</param>
-        void Attack(ICoreActor attacker, CoreItem weapon, SkillType skillType, float damage, DamageType damageType, Vector3 attackVelocity, Vector3 knockForce, bool canBlockWithShield);
+        /// <returns>The attack.</returns>
+        AttackInfo Attack(ICoreActor attacker, CoreItem weapon, SkillType skillType, float damage, DamageType damageType, Vector3 attackVelocity, Vector3 knockForce, bool canBlockWithShield);
 
         /// <summary>
         /// Kills this actor.
@@ -441,6 +442,20 @@ namespace DaveTheMonitor.Core.API
         /// <param name="time">The coyote time, in seconds.</param>
         /// <returns>True if the actor is on the ground, otherwise false.</returns>
         bool IsOnGround(float time);
+
+        /// <summary>
+        /// Deals durability damage to the item in the specified slot.
+        /// </summary>
+        /// <param name="slot">The slot of the item.</param>
+        /// <param name="damage">The amount of durability damage to deal.</param>
+        void DamageItem(EquipIndex slot, int damage);
+
+        /// <summary>
+        /// Deals durability damage to the item in the specified slot.
+        /// </summary>
+        /// <param name="slot">The slot of the item.</param>
+        /// <param name="damage">The amount of durability damage to deal.</param>
+        void DamageItem(int slot, int damage);
 
         /// <summary>
         /// Called every frame.

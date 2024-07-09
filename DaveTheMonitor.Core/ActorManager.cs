@@ -24,8 +24,6 @@ namespace DaveTheMonitor.Core
         private List<ICoreActor> _actorsList;
         private List<ICorePlayer> _playersList;
         private Dictionary<ulong, ICoreActor> _actors;
-        private List<ITMActor> _actorsToAdd;
-        private List<ITMActor> _actorsToRemove;
 
         public ICoreActor GetActor(ITMActor actor)
         {
@@ -55,11 +53,14 @@ namespace DaveTheMonitor.Core
         public void GetActors(BoundingBox box, ICollection<ICoreActor> list)
         {
             list.Clear();
-            foreach (ICoreActor actor in _actorsList)
+            lock (_actorsList)
             {
-                if (box.Intersects(actor.HitBoundingBox))
+                foreach (ICoreActor actor in _actorsList)
                 {
-                    list.Add(actor);
+                    if (actor.IsActive && box.Intersects(actor.HitBoundingBox))
+                    {
+                        list.Add(actor);
+                    }
                 }
             }
         }
@@ -67,11 +68,14 @@ namespace DaveTheMonitor.Core
         public void GetActors(BoundingSphere sphere, ICollection<ICoreActor> list)
         {
             list.Clear();
-            foreach (ICoreActor actor in _actorsList)
+            lock (_actorsList)
             {
-                if (sphere.Intersects(actor.HitBoundingBox))
+                foreach (ICoreActor actor in _actorsList)
                 {
-                    list.Add(actor);
+                    if (actor.IsActive && sphere.Intersects(actor.HitBoundingBox))
+                    {
+                        list.Add(actor);
+                    }
                 }
             }
         }
@@ -79,14 +83,115 @@ namespace DaveTheMonitor.Core
         public void GetActors(Ray ray, float maxDistance, ICollection<ICoreActor> list)
         {
             list.Clear();
-            foreach (ICoreActor actor in _actorsList)
+            lock (_actorsList)
             {
-                float? d = ray.Intersects(actor.HitBoundingBox);
-                if (d.HasValue && d.Value <= maxDistance)
+                foreach (ICoreActor actor in _actorsList)
                 {
-                    list.Add(actor);
+                    if (!actor.IsActive)
+                    {
+                        continue;
+                    }
+
+                    float? d = ray.Intersects(actor.HitBoundingBox);
+                    if (d.HasValue && d.Value <= maxDistance)
+                    {
+                        list.Add(actor);
+                    }
                 }
             }
+        }
+
+        public void GetActors(BoundingBox box, ICollection<ICoreActor> list, Predicate<ICoreActor> predicate)
+        {
+            list.Clear();
+            lock (_actorsList)
+            {
+                foreach (ICoreActor actor in _actorsList)
+                {
+                    if (actor.IsActive && box.Intersects(actor.HitBoundingBox) && predicate(actor))
+                    {
+                        list.Add(actor);
+                    }
+                }
+            }
+        }
+
+        public void GetActors(BoundingSphere sphere, ICollection<ICoreActor> list, Predicate<ICoreActor> predicate)
+        {
+            list.Clear();
+            lock (_actorsList)
+            {
+                foreach (ICoreActor actor in _actorsList)
+                {
+                    if (actor.IsActive && sphere.Intersects(actor.HitBoundingBox) && predicate(actor))
+                    {
+                        list.Add(actor);
+                    }
+                }
+            }
+        }
+
+        public void GetActors(Ray ray, float maxDistance, ICollection<ICoreActor> list, Predicate<ICoreActor> predicate)
+        {
+            list.Clear();
+            lock (_actorsList)
+            {
+                foreach (ICoreActor actor in _actorsList)
+                {
+                    if (!actor.IsActive)
+                    {
+                        continue;
+                    }
+
+                    float? d = ray.Intersects(actor.HitBoundingBox);
+                    if (d.HasValue && d.Value <= maxDistance && predicate(actor))
+                    {
+                        list.Add(actor);
+                    }
+                }
+            }
+        }
+
+        public List<ICoreActor> GetActors(BoundingBox box)
+        {
+            List<ICoreActor> list = new List<ICoreActor>();
+            GetActors(box, list);
+            return list;
+        }
+
+        public List<ICoreActor> GetActors(BoundingSphere sphere)
+        {
+            List<ICoreActor> list = new List<ICoreActor>();
+            GetActors(sphere, list);
+            return list;
+        }
+
+        public List<ICoreActor> GetActors(Ray ray, float maxDistance)
+        {
+            List<ICoreActor> list = new List<ICoreActor>();
+            GetActors(ray, maxDistance, list);
+            return list;
+        }
+
+        public List<ICoreActor> GetActors(BoundingBox box, Predicate<ICoreActor> predicate)
+        {
+            List<ICoreActor> list = new List<ICoreActor>();
+            GetActors(box, list, predicate);
+            return list;
+        }
+
+        public List<ICoreActor> GetActors(BoundingSphere sphere, Predicate<ICoreActor> predicate)
+        {
+            List<ICoreActor> list = new List<ICoreActor>();
+            GetActors(sphere, list, predicate);
+            return list;
+        }
+
+        public List<ICoreActor> GetActors(Ray ray, float maxDistance, Predicate<ICoreActor> predicate)
+        {
+            List<ICoreActor> list = new List<ICoreActor>();
+            GetActors(ray, maxDistance, list, predicate);
+            return list;
         }
 
         public ICorePlayer GetPlayer(ITMPlayer player)
@@ -108,95 +213,90 @@ namespace DaveTheMonitor.Core
 
         public void Update()
         {
-            lock (_actorsToAdd)
+            lock (_actorsList)
             {
-                foreach (ITMActor tmActor in _actorsToAdd)
+                foreach (ICoreActor actor in _actorsList)
                 {
-                    GamerID id = ((IActorBehaviour)tmActor).GamerID;
-                    if (_actors.ContainsKey(id.ID))
-                    {
-#if DEBUG
-                        CorePlugin.Warn($"Actor {tmActor.ActorType} already added: {id}");
-#endif
-                        continue;
-                    }
-
-                    Actor actor = tmActor is ITMPlayer player ? new Player(_game, _world, player) : new NPC(_game, _world, tmActor);
-                    _actors.Add(actor.Id.ID, actor);
-                    _actorsList.Add(actor);
-                    _game.InitializeDefaultData(actor);
-                    Raise_ActorAdded(actor);
-
-                    if (actor is Player p)
-                    {
-                        _game.LoadPlayerState(p);
-                    }
-#if DEBUG
-                    CorePlugin.Log($"Actor {actor.CoreActor.Id} added: {actor.Id}");
-#endif
+                    actor.Update();
                 }
-                _actorsToAdd.Clear();
-            }
-
-            lock (_actorsToRemove)
-            {
-                foreach (ITMActor tmActor in _actorsToRemove)
-                {
-                    GamerID id = ((IActorBehaviour)tmActor).GamerID;
-
-                    bool removed = _actors.Remove(id.ID, out ICoreActor newActor);
-                    if (removed)
-                    {
-                        _actorsList.Remove(newActor);
-                        Raise_ActorRemoved(newActor);
-                    }
-
-#if DEBUG
-                    if (removed)
-                    {
-                        CorePlugin.Log($"Actor {tmActor.ActorType} removed: {id}");
-                    }
-                    else
-                    {
-                        CorePlugin.Warn($"Actor {tmActor.ActorType} removal failed: {id}");
-                    }
-#endif
-                }
-                _actorsToRemove.Clear();
-            }
-
-            foreach (ICoreActor actor in _actorsList)
-            {
-                actor.Update();
             }
         }
 
-        public bool AddActor(ITMActor actor)
+        public bool AddActor(ITMActor tmActor)
         {
-            lock (_actorsToAdd)
+            return AddActor(tmActor, out _);
+        }
+
+        public bool AddActor(ITMActor tmActor, out ICoreActor coreActor)
+        {
+            GamerID id = ((IActorBehaviour)tmActor).GamerID;
+            coreActor = null;
+            lock (_actorsList)
             {
-                _actorsToAdd.Add(actor);
+                if (_actors.ContainsKey(id.ID))
+                {
+#if DEBUG
+                    CorePlugin.Warn($"Actor {tmActor.ActorType} already added: {id}");
+#endif
+                    return false;
+                }
+
+                coreActor = tmActor is ITMPlayer player ? new Player(_game, _world, player) : new NPC(_game, _world, tmActor);
+                _actors.Add(coreActor.Id.ID, coreActor);
+                _actorsList.Add(coreActor);
+                _game.InitializeDefaultData(coreActor);
+                Raise_ActorAdded(coreActor);
             }
 
+            if (coreActor is ICorePlayer p)
+            {
+                _game.LoadPlayerState(p);
+            }
 #if DEBUG
-            GamerID id = ((IActorBehaviour)actor).GamerID;
-            CorePlugin.Log($"Actor {actor.ActorType} queued for addition: {id}");
+            CorePlugin.Log($"Actor {coreActor.CoreActor.Id} added: {coreActor.Id}");
 #endif
             return true;
         }
 
-        public bool RemoveActor(ITMActor actor)
+        public bool RemoveActor(ITMActor tmActor)
         {
-            lock (_actorsToRemove)
+            GamerID id = ((IActorBehaviour)tmActor).GamerID;
+
+            bool removed;
+            lock (_actorsList)
             {
-                _actorsToRemove.Add(actor);
+                removed = _actors.Remove(id.ID, out ICoreActor newActor);
+                if (removed)
+                {
+                    _actorsList.Remove(newActor);
+                    Raise_ActorRemoved(newActor);
+                }
             }
 
 #if DEBUG
-            GamerID id = ((IActorBehaviour)actor).GamerID;
-            CorePlugin.Log($"Actor {actor.ActorType} queued for removal: {id}");
+            if (removed)
+            {
+                CorePlugin.Log($"Actor {tmActor.ActorType} removed: {id}");
+            }
+            else
+            {
+                CorePlugin.Warn($"Actor {tmActor.ActorType} removal failed: {id}");
+            }
 #endif
-            return true;
+            return removed;
+        }
+
+        public ICoreActor SpawnNpc(CoreActor actor, Vector3 position)
+        {
+            return SpawnNpc(actor, position, 0, @"System\AI\Default", DayOrNight.None, null, null, null);
+        }
+
+        public ICoreActor SpawnNpc(CoreActor actor, Vector3 position, float spawnAngle = 0, string behavior = @"System\AI\Default", DayOrNight activeTime = DayOrNight.None, string killScript = null, LootTable loot = null, CombatStats? stats = null)
+        {
+            behavior ??= @"System\AI\Default";
+            ITMActor tmActor = NpcManager.SpawnNpc(actor.ActorType, position, spawnAngle, behavior, activeTime, killScript, loot, stats);
+            AddActor(tmActor, out ICoreActor coreActor);
+            return coreActor;
         }
 
         private void Raise_ActorAdded(ICoreActor actor)
@@ -222,8 +322,6 @@ namespace DaveTheMonitor.Core
             _world = world;
             _actors = new Dictionary<ulong, ICoreActor>();
             _actorsList = new List<ICoreActor>();
-            _actorsToAdd = new List<ITMActor>();
-            _actorsToRemove = new List<ITMActor>();
         }
     }
 }

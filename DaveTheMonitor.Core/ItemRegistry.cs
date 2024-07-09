@@ -9,6 +9,7 @@ namespace DaveTheMonitor.Core
     internal sealed class ItemRegistry : DefinitionRegistry<CoreItem>, ICoreItemRegistry
     {
         public CoreItem this[Item item] => GetItem(item);
+        public CoreItem this[Block block] => GetBlock(block);
 
         public void InitializeAllItems(IEnumerable<ItemDataXML> data)
         {

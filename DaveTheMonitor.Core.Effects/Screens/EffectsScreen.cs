@@ -14,7 +14,6 @@ namespace DaveTheMonitor.Core.Effects.Screens
     {
         private static Window.ColorProfile _windowColors;
         public override string Name => "Effects";
-        private Window mainContainer;
 
         static EffectsScreen()
         {
@@ -31,17 +30,17 @@ namespace DaveTheMonitor.Core.Effects.Screens
 
         private void InitMainContainer()
         {
-            mainContainer = new Window();
+            Window mainContainer = new Window();
             mainContainer.Colors = Window.TransparentColorProfile;
             mainContainer.Name = "main_container";
             canvas.AddChild(mainContainer);
 
-            InitEffectWindows();
+            InitEffectWindows(mainContainer);
 
             SetContainerToCanvas(mainContainer);
         }
 
-        private void InitEffectWindows()
+        private void InitEffectWindows(Window container)
         {
             int margin = 8;
             int width = 600;
@@ -52,7 +51,7 @@ namespace DaveTheMonitor.Core.Effects.Screens
             foreach (ActorEffect effect in Player.Effects())
             {
                 Window win = CreateEffectWindow(effect, 0, startY + (i * height) + (i * margin), width, height);
-                mainContainer.AddChild(win);
+                container.AddChild(win);
                 i++;
             }
         }

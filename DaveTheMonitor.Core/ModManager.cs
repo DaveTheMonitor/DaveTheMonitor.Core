@@ -50,6 +50,19 @@ namespace DaveTheMonitor.Core
             return _activeMods;
         }
 
+        public IEnumerable<ICoreMod> GetAllActiveMods(ModType modType)
+        {
+            List<ICoreMod> mods = new List<ICoreMod>();
+            foreach (ICoreMod mod in _activeMods)
+            {
+                if (mod.Type == modType)
+                {
+                    mods.Add(mod);
+                }
+            }
+            return mods;
+        }
+
         public IEnumerable<ICoreMod> GetAllActivePlugins()
         {
             return _activePlugins;
