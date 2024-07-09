@@ -35,7 +35,7 @@ namespace DaveTheMonitor.Core.Components.Actors
 
         public override void SetDefaults()
         {
-            Behavior ??= @"System\Passive";
+            Behavior ??= @"System\AI\Passive";
             _spawnFrequency ??= 60;
         }
 
