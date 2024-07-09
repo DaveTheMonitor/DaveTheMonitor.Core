@@ -41,9 +41,9 @@ namespace DaveTheMonitor.Core.Components
 
         public static ComponentDefinition? GetComponentFromAlias(string alias, string usage)
         {
-            foreach (ComponentDefinition definition in  _components.Values)
+            foreach (ComponentDefinition definition in _components.Values)
             {
-                if (definition.Alias == alias && ComponentDefinition.ValidUsage(definition, usage))
+                if ((definition.Alias == alias || definition.Id == alias) && ComponentDefinition.ValidUsage(definition, usage))
                 {
                     return definition;
                 }
