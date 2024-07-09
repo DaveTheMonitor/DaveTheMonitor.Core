@@ -90,7 +90,7 @@ namespace DaveTheMonitor.Core.Particles
             _emitFrequency = Emitter?.Frequency ?? 1;
         }
 
-        private ParticleMaterial GetMaterial(ParticleDisplayComponent display)
+        private static ParticleMaterial GetMaterial(ParticleDisplayComponent display)
         {
             if (display == null)
             {
@@ -152,19 +152,40 @@ namespace DaveTheMonitor.Core.Particles
                 particle.Data1 = totalEmitted;
             }
 
-            if (Wind != null)
-            {
-                particle.Position += world.WindVelocity * world.WindFactor * Wind.Multiplier * Services.ElapsedTime;
-            }
             if (Gravity != null)
             {
                 particle.Velocity += new Vector3(0, -1, 0) * Services.ElapsedTime * Gravity.Multiplier;
             }
+
+            bool resting = false;
             if (Collision != null)
             {
                 if (TouchingNonPassableBlock(particle))
                 {
-                    Destroy(particleManager, particle);
+                    if (Collision.Destroy)
+                    {
+                        Destroy(particleManager, particle);
+                        return;
+                    }
+                    else
+                    {
+                        particle.Velocity = Vector3.Zero;
+                        resting = true;
+                    }
+                }
+            }
+            
+            if (Wind != null)
+            {
+                if (resting)
+                {
+                    Vector3 add = world.WindVelocity * world.WindFactor * Wind.Multiplier * Services.ElapsedTime;
+                    add.Y = 0;
+                    particle.Position += add;
+                }
+                else
+                {
+                    particle.Position += world.WindVelocity * world.WindFactor * Wind.Multiplier * Services.ElapsedTime;
                 }
             }
         }

@@ -3,7 +3,10 @@ using DaveTheMonitor.Core.Animation.Json;
 using DaveTheMonitor.Core.API;
 using DaveTheMonitor.Core.Assets;
 using DaveTheMonitor.Core.Assets.Loaders;
+using DaveTheMonitor.Core.Helpers;
+using DaveTheMonitor.Core.Json;
 using DaveTheMonitor.Core.Plugin;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.TotalMiner;
@@ -385,6 +388,234 @@ namespace DaveTheMonitor.Core
             foreach (ICoreMod mod in _activeMods)
             {
                 mod.Content.AddAssetType(assetType, path, filter, loader);
+            }
+        }
+
+        public static int RegisterAllBlueprints(ICoreGame game)
+        {
+            ICoreItemRegistry registry = game.ItemRegistry;
+            int count = 0;
+            foreach (ICoreMod mod in game.ModManager.GetAllActiveMods(ModType.Core))
+            {
+                ForEachJson(Path.Combine(mod.FullPath, "Blueprints"), json =>
+                {
+                    BlueprintXML[] blueprints = ParseBlueprints(json, registry);
+                    int start = Globals1.BlueprintData.Length;
+                    Array.Resize(ref Globals1.BlueprintData, Globals1.BlueprintData.Length + blueprints.Length);
+                    for (int i = 0; i < blueprints.Length; i++)
+                    {
+                        Globals1.BlueprintData[start + i] = blueprints[i];
+                    }
+                    count += blueprints.Length;
+                });
+            }
+            return count;
+        }
+
+        private static BlueprintXML[] ParseBlueprints(string json, ICoreItemRegistry registry)
+        {
+            JsonDocument doc = JsonDocument.Parse(json, DeserializationHelper.DocumentOptionsTrailingCommasSkipComments);
+            JsonElement root = doc.RootElement;
+            ModVersion version = DeserializationHelper.GetVersionProperty(root, "Version") ?? throw new InvalidCoreJsonException("Blueprint Version must be specified");
+            if (version != new ModVersion(1, 0, 0))
+            {
+                throw new InvalidCoreJsonException($"Blueprint version {version} not found.");
+            }
+
+            if (!root.TryGetProperty("Blueprints", out JsonElement blueprintsElement))
+            {
+                throw new InvalidCoreJsonException("Blueprint must specify at least one blueprint.");
+            }
+
+            if (blueprintsElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidCoreJsonException("Blueprint Blueprints must be an array of objects.");
+            }
+
+            List<BlueprintXML> list = new List<BlueprintXML>();
+            foreach (JsonElement blueprintElement in blueprintsElement.EnumerateArray())
+            {
+                if (blueprintElement.ValueKind != JsonValueKind.Object)
+                {
+                    throw new InvalidCoreJsonException("Blueprint Blueprints must be an array of objects.");
+                }
+
+                bool isDefault = DeserializationHelper.GetBoolProperty(blueprintElement, "IsDefault") ?? false;
+                Vector2 depth = DeserializationHelper.GetVector2Property(blueprintElement, "Depth") ?? new Vector2(0, 1);
+                BlueprintCraftType type = DeserializationHelper.GetEnumProperty<BlueprintCraftType>(blueprintElement, "Type") ?? BlueprintCraftType.Crafting;
+                if (type == BlueprintCraftType.Crafting)
+                {
+                    if (!blueprintElement.TryGetProperty("Pattern", out JsonElement patternElement))
+                    {
+                        throw new InvalidCoreJsonException("Blueprint Pattern must be specified.");
+                    }
+
+                    if (patternElement.ValueKind != JsonValueKind.Array)
+                    {
+                        throw new InvalidCoreJsonException("Blueprint Pattern must be an array of arrays of items.");
+                    }
+
+                    int patternLength = patternElement.GetArrayLength();
+                    if (patternLength == 0 || patternLength > 3)
+                    {
+                        throw new InvalidCoreJsonException("Blueprint Pattern must contain 1-3 rows.");
+                    }
+
+                    InventoryItemXML[,] items = new InventoryItemXML[3, 3];
+                    int row = 0;
+                    foreach (JsonElement arr in patternElement.EnumerateArray())
+                    {
+                        if (arr.ValueKind != JsonValueKind.Array)
+                        {
+                            throw new InvalidCoreJsonException("Blueprint Pattern must be an array of arrays of items.");
+                        }
+
+                        int length = arr.GetArrayLength();
+                        if (length == 0 || length > 3)
+                        {
+                            throw new InvalidCoreJsonException("Blueprint Pattern array must contain 1-3 items.");
+                        }
+
+                        int column = 0;
+                        foreach (JsonElement itemElement in arr.EnumerateArray())
+                        {
+                            if (itemElement.ValueKind == JsonValueKind.String)
+                            {
+                                CoreItem item = registry.GetDefinition(itemElement.GetString()) ?? TMItems.None;
+                                items[row, column] = new InventoryItemXML()
+                                {
+                                    ItemID = item.ItemType,
+                                    Count = item == TMItems.None ? 0 : 1
+                                };
+                            }
+                            else if (itemElement.ValueKind == JsonValueKind.Object)
+                            {
+                                if (!itemElement.TryGetProperty("ID", out JsonElement idElement))
+                                {
+                                    throw new InvalidCoreJsonException("Blueprint Pattern item must specify an ID");
+                                }
+
+                                if (idElement.ValueKind != JsonValueKind.String)
+                                {
+                                    throw new InvalidCoreJsonException("Blueprint Pattern item ID must be a string.");
+                                }
+
+                                CoreItem item = registry.GetDefinition(idElement.GetString()) ?? TMItems.None;
+                                if (item == TMItems.None)
+                                {
+                                    items[row, column] = new InventoryItemXML()
+                                    {
+                                        ItemID = Item.None,
+                                        Count = 0
+                                    };
+                                    column++;
+                                    continue;
+                                }
+
+                                ushort count = DeserializationHelper.GetUInt16Property(itemElement, "Count") ?? 1;
+                                ushort durability = DeserializationHelper.GetUInt16Property(itemElement, "Durability") ?? 0;
+                                items[row, column] = new InventoryItemXML()
+                                {
+                                    ItemID = item.ItemType,
+                                    Count = count,
+                                    Durability = durability,
+                                };
+                            }
+                            else
+                            {
+                                throw new InvalidCoreJsonException("Blueprint Pattern item must be a string or object.");
+                            }
+
+                            column++;
+                        }
+                        row++;
+                    }
+
+                    if (!blueprintElement.TryGetProperty("Result", out JsonElement resultElement))
+                    {
+                        throw new InvalidCoreJsonException("Blueprint Result must be specified.");
+                    }
+
+                    InventoryItemNDXML result;
+                    if (resultElement.ValueKind == JsonValueKind.String)
+                    {
+                        CoreItem item = registry.GetDefinition(resultElement.GetString()) ?? TMItems.None;
+                        result = new InventoryItemNDXML()
+                        {
+                            ItemID = item.ItemType,
+                            Count = 1
+                        };
+                    }
+                    else if (resultElement.ValueKind == JsonValueKind.Object)
+                    {
+                        if (!resultElement.TryGetProperty("ID", out JsonElement idElement))
+                        {
+                            throw new InvalidCoreJsonException("Blueprint Result item must specify an ID");
+                        }
+
+                        if (idElement.ValueKind != JsonValueKind.String)
+                        {
+                            throw new InvalidCoreJsonException("Blueprint Result item ID must be a string.");
+                        }
+
+                        CoreItem item = registry.GetDefinition(idElement.GetString()) ?? TMItems.None;
+                        if (item == TMItems.None)
+                        {
+                            result = new InventoryItemNDXML()
+                            {
+                                ItemID = Item.None,
+                                Count = 1
+                            };
+                        }
+
+                        ushort count = DeserializationHelper.GetUInt16Property(resultElement, "Count") ?? 1;
+                        result = new InventoryItemNDXML()
+                        {
+                            ItemID = item.ItemType,
+                            Count = count
+                        };
+                    }
+                    else
+                    {
+                        throw new InvalidCoreJsonException("Blueprint Result item must be a string or object.");
+                    }
+
+                    BlueprintXML xml = new BlueprintXML()
+                    {
+                        IsDefault = isDefault,
+                        IsValid = true,
+                        CraftType = type,
+                        Depth = depth,
+                        Result = result,
+                        ItemID = result.ItemID,
+                        Material11 = items[2, 0],
+                        Material12 = items[2, 1],
+                        Material13 = items[2, 2],
+                        Material21 = items[1, 0],
+                        Material22 = items[1, 1],
+                        Material23 = items[1, 2],
+                        Material31 = items[0, 0],
+                        Material32 = items[0, 1],
+                        Material33 = items[0, 2],
+                    };
+                    list.Add(xml);
+                }
+            }
+            return list.ToArray();
+        }
+
+        private static void ForEachJson(string fullPath, Action<string> action)
+        {
+            if (!Directory.Exists(fullPath))
+            {
+                return;
+            }
+
+            string[] files = DeserializationHelper.GetJsonFiles(fullPath, SearchOption.AllDirectories);
+            foreach (string file in files)
+            {
+                string json = File.ReadAllText(file);
+                action(json);
             }
         }
 

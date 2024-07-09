@@ -96,5 +96,17 @@ namespace DaveTheMonitor.Core.Patches
 
             action(index);
         }
+
+        public static void ModifyFirst(this List<CodeInstruction> list, Func<CodeInstruction, int, bool> predicate, Action<int> action)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (predicate(list[i], i))
+                {
+                    action(i);
+                    break;
+                }
+            }
+        }
     }
 }

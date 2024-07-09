@@ -45,13 +45,20 @@ namespace DaveTheMonitor.Core
 
         private void SetItemData(ItemDataXML data, CoreItem item)
         {
+            ref ItemTypeDataXML typeData = ref Globals1.ItemTypeData[(int)data.ItemID];
+            if (item.StatBonus != null) typeData.Combat = (CombatItem)item.StatBonus.CombatId;
+
             item.Display?.ReplaceXmlData(data);
             item.Durability?.ReplaceXmlData(data);
             item.Locked?.ReplaceXmlData(data);
             item.Stackable?.ReplaceXmlData(data);
             item.Tradeable?.ReplaceXmlData(data);
+            item.StatBonus?.ReplaceXmlData(ref Globals1.ItemCombatData[(int)typeData.Combat]);
             item.Weapon?.ReplaceXmlData(data);
-            item.TypeComponent?.ReplaceXmlData(ref Globals1.ItemTypeData[(int)data.ItemID]);
+            item.TypeComponent?.ReplaceXmlData(ref typeData);
+            item.Fuel?.ReplaceXmlData(data);
+            item.SwingTime?.ReplaceXmlData(ref Globals1.ItemSwingTimeData[(int)data.ItemID]);
+            item.Sounds?.ReplaceXmlData(ref Globals1.ItemSoundData[(int)data.ItemID]);
         }
 
         protected override void OnRegister(CoreItem definition)

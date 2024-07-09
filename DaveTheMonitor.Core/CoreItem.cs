@@ -101,6 +101,24 @@ namespace DaveTheMonitor.Core
         public ItemWeaponComponent Weapon { get; private set; }
 
         /// <summary>
+        /// This item's <see cref="ItemFuelComponent"/>, if it has one.
+        /// </summary>
+        /// <remarks>This may be null.</remarks>
+        public ItemFuelComponent Fuel { get; private set; }
+
+        /// <summary>
+        /// This item's <see cref="ItemSwingTimeComponent"/>, if it has one.
+        /// </summary>
+        /// <remarks>This may be null.</remarks>
+        public ItemSwingTimeComponent SwingTime { get; private set; }
+
+        /// <summary>
+        /// This item's <see cref="ItemSoundComponent"/>, if it has one.
+        /// </summary>
+        /// <remarks>This may be null.</remarks>
+        public ItemSoundComponent Sounds { get; private set; }
+
+        /// <summary>
         /// This item's HD texture if it was added with the Json API. Use `<see cref="CoreExtensions.GetTexture(StudioForge.TotalMiner.API.ITMTexturePack, CoreItem)"/> if you want to actually display the item's texture.
         /// </summary>
         /// <remarks>This may be null.</remarks>
@@ -163,6 +181,10 @@ namespace DaveTheMonitor.Core
                 TextureSD = Game.ModManager.LoadTexture(mod, textureComponent.SD, false) ?? CoreGlobalData.MissingTexture16;
                 TextureSDSrc = new Rectangle(0, 0, 16, 16);
             }
+            if (StatBonus?.CombatId == -1)
+            {
+                StatBonus.Initialize();
+        }
         }
 
         private void UpdateFields()
@@ -176,6 +198,9 @@ namespace DaveTheMonitor.Core
             Tradeable = Components.GetComponent<ItemTradeableComponent>();
             TypeComponent = Components.GetComponent<ItemTypeComponent>();
             Weapon = Components.GetComponent<ItemWeaponComponent>();
+            Fuel = Components.GetComponent<ItemFuelComponent>();
+            SwingTime = Components.GetComponent<ItemSwingTimeComponent>();
+            Sounds = Components.GetComponent<ItemSoundComponent>();
         }
 
         /// <summary>
@@ -197,6 +222,9 @@ namespace DaveTheMonitor.Core
             components.AddComponent(ItemTradeableComponent.FromXML(data));
             components.AddComponent(ItemTypeComponent.FromXML(typeData));
             components.AddComponent(ItemWeaponComponent.FromXML(data));
+            components.AddComponent(ItemFuelComponent.FromXML(data));
+            components.AddComponent(ItemSwingTimeComponent.FromXML(Globals1.ItemSwingTimeData[(int)data.ItemID]));
+            components.AddComponent(ItemSoundComponent.FromXML(Globals1.ItemSoundData[(int)data.ItemID]));
             components.SetComponentDefaults();
             CoreItem item = new CoreItem(data.ItemID, components);
 

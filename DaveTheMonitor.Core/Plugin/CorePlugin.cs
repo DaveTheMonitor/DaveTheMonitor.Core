@@ -144,6 +144,8 @@ namespace DaveTheMonitor.Core.Plugin
             _game.ItemRegistry.RegisterAllJson<CoreItem>(_game.ModManager.GetAllActiveMods(), "Items");
             _game.ItemRegistry.UpdateGlobalItemData();
 
+            RegisterBlueprints();
+
             _game.ActorRegistry.InitializeAllActors(Globals1.NpcTypeData);
             _game.ActorRegistry.RegisterAllJson<CoreActor>(_game.ModManager.GetAllActiveMods(), "Actors");
             _game.ActorRegistry.UpdateGlobalActorData();
@@ -195,6 +197,44 @@ namespace DaveTheMonitor.Core.Plugin
             // We call this after ReadState so the player save state
             // is read before the player is added.
             _game.AddActors();
+        }
+
+        private void RegisterBlueprints()
+        {
+            if (ModManager.RegisterAllBlueprints(Game) == 0)
+            {
+                return;
+            }
+
+            MethodInfo unlockItem = AccessTools.Method(Game.TMGame.GetType(), "UnlockItem", new Type[]
+            {
+                typeof(Item),
+                typeof(bool)
+            });
+            Traverse traverse = new Traverse(AccessTools.TypeByName("StudioForge.TotalMiner.Blueprints"));
+            traverse.Method("InitializeBlueprints", _game.TMGame).GetValue();
+            Array blueprintsList = traverse.Field<Array>("BlueprintList").Value;
+            for (int i = 0; i < blueprintsList.Length; i++)
+            {
+                object bp = blueprintsList.GetValue(i);
+                Traverse blueprint = new Traverse(bp);
+                if (!blueprint.Field<bool>("IsValid").Value)
+                {
+                    continue;
+                }
+
+                bool enabled = Game.GameMode == GameMode.Survival || Game.GameMode == GameMode.Creative || blueprint.Field<bool>("IsDefault").Value;
+                if (!enabled)
+                {
+                    continue;
+                }
+
+                blueprint.Field<bool>("IsEnabled").Value = enabled;
+                blueprint.Field<bool>("IsGenerated").Value = enabled;
+                InventoryItem item = blueprint.Field<InventoryItem>("Result").Value;
+
+                unlockItem.Invoke(Game.TMGame, new object[] { item.ItemID, false });
+            }
         }
 
         private void ScriptPrintHandler(object sender, ScriptPrintEventArgs e)

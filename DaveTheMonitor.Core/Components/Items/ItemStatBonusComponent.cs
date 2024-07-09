@@ -9,6 +9,7 @@ namespace DaveTheMonitor.Core.Components.Items
     public sealed class ItemStatBonusComponent : Component, IComponentDeserializable
     {
         public override string ComponentId => "Core.ItemStatBonus";
+        public int CombatId { get; private set; }
         public int Health => _health.Value;
         public int Attack => _attack.Value;
         public int Strength => _strength.Value;
@@ -26,6 +27,7 @@ namespace DaveTheMonitor.Core.Components.Items
         void IComponentDeserializable.ReadFrom(ModVersion version, object obj)
         {
             JsonElement element = (JsonElement)obj;
+            CombatId = -1;
             _health = DeserializationHelper.GetInt32Property(element, "Health");
             _attack = DeserializationHelper.GetInt32Property(element, "Attack");
             _strength = DeserializationHelper.GetInt32Property(element, "Strength");
@@ -37,6 +39,7 @@ namespace DaveTheMonitor.Core.Components.Items
         public override void ReplaceWith(Component replacement)
         {
             var component = (ItemStatBonusComponent)replacement;
+            CombatId = component.CombatId;
             if (component._health.HasValue) _health = component._health;
             if (component._attack.HasValue) _attack = component._attack;
             if (component._strength.HasValue) _strength = component._strength;
@@ -47,6 +50,11 @@ namespace DaveTheMonitor.Core.Components.Items
 
         public void ReplaceXmlData(ref ItemCombatDataXML data)
         {
+            if (CombatId <= 0)
+            {
+                return;
+            }
+
             if (_health.HasValue) data.Health = (short)Health;
             if (_attack.HasValue) data.Attack = (short)Attack;
             if (_strength.HasValue) data.Strength = (short)Strength;
@@ -65,10 +73,27 @@ namespace DaveTheMonitor.Core.Components.Items
             _looting ??= 0;
         }
 
+        public void Initialize()
+        {
+            CombatId = Globals1.ItemCombatData.Length;
+            Array.Resize(ref Globals1.ItemCombatData, Globals1.ItemCombatData.Length + 1);
+            Globals1.ItemCombatData[CombatId] = new ItemCombatDataXML()
+            {
+                CombatID = (CombatItem)CombatId,
+                Health = (short)Health,
+                Attack = (short)Attack,
+                Strength = (short)Strength,
+                Defence = (short)Defense,
+                Ranged = (short)Ranged,
+                Looting = (short)Looting
+            };
+        }
+
         public static ItemStatBonusComponent FromXML(ItemCombatDataXML data)
         {
             var component = new ItemStatBonusComponent
             {
+                CombatId = (int)data.CombatID,
                 _health = data.Health,
                 _attack = data.Attack,
                 _strength = data.Strength,
