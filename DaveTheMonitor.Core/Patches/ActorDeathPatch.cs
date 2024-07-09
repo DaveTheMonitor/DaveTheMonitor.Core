@@ -50,7 +50,7 @@ namespace DaveTheMonitor.Core.Patches
                 {
                     if (enumerator.Current is ActorData data)
                     {
-                        data.PostKillTarget(coreAttacker, item, attack);
+                        data.PostKillTarget(actor, item, attack);
                     }
                 }
             }
