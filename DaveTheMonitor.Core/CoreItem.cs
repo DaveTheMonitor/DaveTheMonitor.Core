@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StudioForge.TotalMiner;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -18,6 +19,18 @@ namespace DaveTheMonitor.Core
     [DebuggerDisplay(@"{(IsBlock ? ""Block"" : ""Item"")} : {Id}")]
     public sealed class CoreItem : IDefinition, IJsonType<CoreItem>
     {
+        internal struct InspectAction
+        {
+            public string Text { get; set; }
+            public Action<ICorePlayer, InventoryItem> Action { get; set; }
+
+            public InspectAction(string text, Action<ICorePlayer, InventoryItem> action)
+            {
+                Text = text;
+                Action = action;
+            }
+        }
+
         /// <summary>
         /// True if this item is a block, otherwise false.
         /// </summary>
@@ -140,6 +153,7 @@ namespace DaveTheMonitor.Core
         /// </summary>
         public Rectangle TextureSDSrc { get; private set; }
         internal ICoreGame _game;
+        internal List<InspectAction> _inspectActions;
         
         public static CoreItem FromJson(string json)
         {
@@ -184,7 +198,7 @@ namespace DaveTheMonitor.Core
             if (StatBonus?.CombatId == -1)
             {
                 StatBonus.Initialize();
-        }
+            }
         }
 
         private void UpdateFields()
@@ -269,6 +283,15 @@ namespace DaveTheMonitor.Core
                 _ => 0
             };
             return new SwingTime(currentTime, data.Time, extendTime);
+        }
+
+        /// <summary>
+        /// Adds an action to the inspect (examine) menu of this item.
+        /// </summary>
+        public void AddInspectAction(string text, Action<ICorePlayer, InventoryItem> action)
+        {
+            _inspectActions ??= new List<InspectAction>();
+            _inspectActions.Add(new InspectAction(text, action));
         }
 
         public override string ToString()
