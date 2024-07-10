@@ -74,21 +74,22 @@ namespace DaveTheMonitor.Core.Effects.Screens
             Window background = new Window(cX, cY, iconSize, iconSize);
             background.Colors = Window.TransparentColorProfile;
             background.LoadTexture(effect.Definition.BackgroundTexture, true, true, 1);
-            background.Texture.SrRect = def.BackgroundSrc;
+            background.Texture.SrRect = def.GetBackgroundSrc(effect);
             container.AddChild(background);
 
             Window icon = new Window(0, 0, background.Size.X, background.Size.Y);
             icon.Colors = Window.TransparentColorProfile;
             icon.LoadTexture(effect.Definition.IconTexture, true, true, 1);
-            icon.Texture.SrRect = def.IconSrc;
+            icon.Texture.SrRect = def.GetIconSrc(effect);
             background.AddChild(icon);
 
             cX += iconSize + margin;
             SpriteFont font = CoreGlobals.GameFont16;
 
-            Vector2 measure = font.MeasureString(def.Name);
-            TextBox textBox = new TextBox(def.Name, cX, cY, width - cX - margin, (int)measure.Y, 1, WinTextAlignX.Left, WinTextAlignY.Center);
-            textBox.Text = def.Name;
+            string name = def.GetName(effect);
+            Vector2 measure = font.MeasureString(name);
+            TextBox textBox = new TextBox(name, cX, cY, width - cX - margin, (int)measure.Y, 1, WinTextAlignX.Left, WinTextAlignY.Center);
+            textBox.Text = name;
             textBox.Font = font;
             textBox.Colors = Colors.BlackText;
             container.AddChild(textBox);
@@ -96,9 +97,10 @@ namespace DaveTheMonitor.Core.Effects.Screens
             font = CoreGlobals.GameFont12;
             cY += (int)measure.Y;
 
-            measure = font.MeasureString(def.Description);
-            textBox = new TextBox(def.Description, cX, cY, width - cX - margin, (int)measure.Y, 1, WinTextAlignX.Left, WinTextAlignY.Center);
-            textBox.Text = def.Description;
+            string desc = def.GetDescription(effect);
+            measure = font.MeasureString(desc);
+            textBox = new TextBox(desc, cX, cY, width - cX - margin, (int)measure.Y, 1, WinTextAlignX.Left, WinTextAlignY.Center);
+            textBox.Text = desc;
             textBox.Font = font;
             textBox.Colors = Colors.BlackText;
             container.AddChild(textBox);

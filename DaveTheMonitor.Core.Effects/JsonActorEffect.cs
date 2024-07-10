@@ -40,16 +40,12 @@ namespace DaveTheMonitor.Core.Effects
         public override string Id => _id;
         public override Texture2D BackgroundTexture => _background;
         public override Texture2D IconTexture => _icon;
-        public override Rectangle BackgroundSrc => _bgSrc;
-        public override Rectangle IconSrc => _iconSrc;
         public override ActorEffectType Type => _type;
         public ComponentCollection Components { get; private set; }
         public EffectDefinitionComponent Definition { get; private set; }
         public EffectDisplayComponent Display { get; private set; }
         public EffectHealthComponent Health { get; private set; }
         public EffectParticleComponent Particle { get; private set; }
-        public override string Name => Display?.Name;
-        public override string Description => Display?.Description;
         private string _id;
         private ActorEffectType _type;
         private Texture2D _background;
@@ -110,6 +106,14 @@ namespace DaveTheMonitor.Core.Effects
             _bgSrc = Display.BackgroundSrc ?? new Rectangle(0, 0, _background.Width, _background.Height);
             _iconSrc = Display.IconSrc ?? new Rectangle(0, 0, _icon.Width, _icon.Height);
         }
+
+        public override string GetName(ActorEffect effect) => Display?.Name;
+
+        public override string GetDescription(ActorEffect effect) => Display?.Description;
+
+        public override Rectangle GetBackgroundSrc(ActorEffect effect) => _bgSrc;
+
+        public override Rectangle GetIconSrc(ActorEffect effect) => _iconSrc;
 
         public override void Update(ActorEffect effect)
         {

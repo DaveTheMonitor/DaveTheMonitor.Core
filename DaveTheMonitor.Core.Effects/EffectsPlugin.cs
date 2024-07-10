@@ -68,8 +68,8 @@ namespace DaveTheMonitor.Core.Effects
 
                     Texture2D icon = def.IconTexture;
                     Texture2D bg = def.BackgroundTexture;
-                    Rectangle iconSrc = def.IconSrc;
-                    Rectangle bgSrc = def.BackgroundSrc;
+                    Rectangle iconSrc = def.GetIconSrc(effect);
+                    Rectangle bgSrc = def.GetBackgroundSrc(effect);
 
                     int iconSize = 64;
                     Rectangle hudBounds = player.HudBounds;

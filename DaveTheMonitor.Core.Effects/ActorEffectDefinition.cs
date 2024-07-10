@@ -8,13 +8,9 @@ namespace DaveTheMonitor.Core.Effects
     {
         public abstract string Id { get; }
         public int NumId { get; set; }
-        public abstract string Name { get; }
-        public abstract string Description { get; }
         public abstract ActorEffectType Type { get; }
         public abstract Texture2D BackgroundTexture { get; }
         public abstract Texture2D IconTexture { get; }
-        public abstract Rectangle BackgroundSrc { get; }
-        public abstract Rectangle IconSrc { get; }
         public bool ShouldDisplay => BackgroundTexture != null && IconTexture != null;
         protected ICoreGame Game { get; private set; }
 
@@ -27,6 +23,11 @@ namespace DaveTheMonitor.Core.Effects
         {
             Game = game;
         }
+
+        public abstract string GetName(ActorEffect effect);
+        public abstract string GetDescription(ActorEffect effect);
+        public abstract Rectangle GetBackgroundSrc(ActorEffect effect);
+        public abstract Rectangle GetIconSrc(ActorEffect effect);
 
         public virtual void Update(ActorEffect effect)
         {
