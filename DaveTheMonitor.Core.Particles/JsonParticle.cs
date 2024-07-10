@@ -203,30 +203,6 @@ namespace DaveTheMonitor.Core.Particles
 
         public override float GetDuration(ParticleInstance particle) => _duration;
 
-        public override void GetDirection(ParticleInstance particle, ref Vector3 cameraPos, Vector3 cameraViewDirection, out Matrix matrix)
-        {
-            Vector3 pos = particle.Position;
-            Vector3 up = Vector3.Up;
-            switch (_faceType)
-            {
-                case ParticleFaceType.Billboard:
-                {
-                    Matrix.CreateBillboard(ref pos, ref cameraPos, ref up, cameraViewDirection, out matrix);
-                    break;
-                }
-                case ParticleFaceType.ConstrainedBillboard:
-                {
-                    Matrix.CreateConstrainedBillboard(ref pos, ref cameraPos, ref up, cameraViewDirection, null, out matrix);
-                    break;
-                }
-                default:
-                {
-                    Matrix.CreateBillboard(ref pos, ref cameraPos, ref up, cameraViewDirection, out matrix);
-                    break;
-                }
-            }
-        }
-
         public override Rectangle GetSrc(ParticleInstance particle)
         {
             return Display.Src ?? Display.SrcKeyframes.GetValue(GetAgeNormalized(particle));

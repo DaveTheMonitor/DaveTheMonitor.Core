@@ -77,20 +77,6 @@ namespace DaveTheMonitor.Core.Particles
         public abstract float GetDuration(ParticleInstance particle);
 
         /// <summary>
-        /// Gets the direction of the particle as a matrix. Defaults to a billboard.
-        /// </summary>
-        /// <param name="particle">The particle instance.</param>
-        /// <param name="cameraPos">The position of the camera.</param>
-        /// <param name="cameraViewDirection">The view direction of the camera.</param>
-        public virtual void GetDirection(ParticleInstance particle, ref Vector3 cameraPos, Vector3 cameraViewDirection, out Matrix matrix)
-        {
-            Vector3 pos = particle.Position;
-            Vector3 up = Vector3.Up;
-            Matrix.CreateBillboard(ref pos, ref cameraPos, ref up, cameraViewDirection, out matrix);
-            return ;
-        }
-
-        /// <summary>
         /// Gets the color of the particle. Defaults to <see cref="Color.White"/> (no color)
         /// </summary>
         /// <param name="particle">The particle instance.</param>

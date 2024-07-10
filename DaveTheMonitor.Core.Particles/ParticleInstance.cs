@@ -1,6 +1,8 @@
 ﻿using DaveTheMonitor.Core.API;
 using Microsoft.Xna.Framework;
 using StudioForge.Engine;
+using StudioForge.Engine.Core;
+using System;
 
 namespace DaveTheMonitor.Core.Particles
 {
@@ -48,11 +50,13 @@ namespace DaveTheMonitor.Core.Particles
 
         public bool ShouldRender(Vector2 size, BoundingFrustum frustum)
         {
-            Vector3 sizeVector3 = new Vector3(size.X, size.Y, size.X);
-            Vector3 min = Position - sizeVector3;
-            Vector3 max = Position + sizeVector3;
-            BoundingBox box = new BoundingBox(min, max);
-            return frustum.Intersects(box);
+            // We slightly increase the radius so particles don't stop
+            // rendering when only the corner is visible at the cost of
+            // some false positives.
+            float radius = Math.Max(size.X, size.Y) * 0.7f;
+            BoundingSphere sphere = new BoundingSphere(Position, radius);
+            frustum.Contains(ref sphere, out ContainmentType result);
+            return result != ContainmentType.Disjoint;
         }
 
         public ParticleInstance(int id)

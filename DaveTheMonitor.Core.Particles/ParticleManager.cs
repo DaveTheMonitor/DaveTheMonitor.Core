@@ -296,11 +296,13 @@ namespace DaveTheMonitor.Core.Particles
                 PrepareForDraw(_alphaBlendNoFog);
             }
 
-            ParticleInstance[] particles = _particles;
+            ReadOnlySpan<ParticleInstance> particles = _particles.AsSpan();
             int active = 0;
             int renderedParticles = 0;
-            foreach (ParticleInstance particle in particles)
+            BoundingFrustum frustum = virtualPlayer.Frustum;
+            for (int i = 0; i < particles.Length; i++)
             {
+                ParticleInstance particle = particles[i];
                 if (!particle.Dead)
                 {
                     ParticleDefinition definition = _registry.GetDefinition(particle.Type);
@@ -323,35 +325,31 @@ namespace DaveTheMonitor.Core.Particles
 
                     Vector2 size = definition.GetSize(particle);
 
-                    if (!particle.ShouldRender(size, virtualPlayer.Frustum))
+                    if (!particle.ShouldRender(size, frustum))
                     {
                         continue;
                     }
 
                     ParticleDrawGroup group = GetDrawGroup(definition);
 
-                    Vector3 cameraPos = virtualPlayer.EyePosition;
-
                     Rectangle src = definition.GetSrc(particle);
                     src.X += definition._textureInfo.X;
                     src.Y += definition._textureInfo.Y;
                     Texture3D tex = _registry.Texture;
-                    Color color = definition.GetColor(particle);
-                    Vector2 texStart = new Vector2(src.X / (float)tex.Width, src.Y / (float)tex.Height);
-                    Vector2 texEnd = new Vector2((src.X + src.Width) / (float)tex.Width, (src.Y + src.Height) / (float)tex.Height);
-
-                    EnsureLength(group, group.InstanceCount + 1);
-                    ParticleInstanceVertex[] instances = group.Instances;
 
                     float depth = definition._textureInfo.Depth > 0 ? tex.Depth / (float)definition._textureInfo.Depth : 0;
-                    Vector3 texCoord0 = new Vector3(texStart, depth);
-                    Vector3 texCoord1 = new Vector3(texEnd, depth);
-                    ref ParticleInstanceVertex v = ref instances[group.InstanceCount];
+
+                    EnsureLength(group, group.InstanceCount + 1);
+                    ref ParticleInstanceVertex v = ref group.Instances[group.InstanceCount];
                     v.Position = particle.Position;
                     v.Size = size;
-                    v.Color = color;
-                    v.TexCoord0 = texCoord0;
-                    v.TexCoord1 = texCoord1;
+                    v.Color = definition.GetColor(particle);
+                    v.TexCoord0.X = src.X / (float)tex.Width;
+                    v.TexCoord0.Y = src.Y / (float)tex.Height;
+                    v.TexCoord0.Z = depth;
+                    v.TexCoord1.X = (src.X + src.Width) / (float)tex.Width;
+                    v.TexCoord1.Y = (src.Y + src.Height) / (float)tex.Height;
+                    v.TexCoord1.Z = depth;
 
                     group.InstanceCount++;
                     renderedParticles++;
@@ -484,7 +482,7 @@ namespace DaveTheMonitor.Core.Particles
                 _bindings[1] = new VertexBufferBinding(_instanceBuffer, 0, 1);
                 device.SetVertexBuffers(_bindings);
                 device.Indices = _indexBuffer;
-                device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, 6, group.InstanceCount);
+                device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, 2, group.InstanceCount);
             }
         }
 
