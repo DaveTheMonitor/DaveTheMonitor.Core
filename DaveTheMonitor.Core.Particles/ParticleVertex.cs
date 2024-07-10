@@ -7,13 +7,11 @@ namespace DaveTheMonitor.Core.Particles
     [StructLayout(LayoutKind.Sequential)]
     public struct ParticleVertex : IVertexType
     {
-        public static readonly VertexDeclaration VertexDeclaration;
+        public static readonly VertexDeclaration VertexDeclaration= new VertexDeclaration(new VertexElement[]
+            {
+                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+            });
         public Vector3 Position;
-
-        public ParticleVertex(Vector3 position)
-        {
-            Position = position;
-        }
 
         VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
 
@@ -24,7 +22,7 @@ namespace DaveTheMonitor.Core.Particles
 
         public override string ToString()
         {
-            return $"{{Position: {Position}}}";
+            return $"{{ Position: {Position} }}";
         }
 
         public static bool operator ==(ParticleVertex left, ParticleVertex right)
@@ -42,12 +40,9 @@ namespace DaveTheMonitor.Core.Particles
             return obj is ParticleVertex v && this == v;
         }
 
-        static ParticleVertex()
+        public ParticleVertex(Vector3 position)
         {
-            VertexDeclaration = new VertexDeclaration(new VertexElement[]
-            {
-                new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
-            });
+            Position = position;
         }
     }
 }
