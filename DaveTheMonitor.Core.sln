@@ -57,6 +57,7 @@ Global
 		{0D3099C3-303A-4699-9F37-9825504D6773}.Debug|x64.ActiveCfg = Debug|x64
 		{0D3099C3-303A-4699-9F37-9825504D6773}.Debug|x64.Build.0 = Debug|x64
 		{0D3099C3-303A-4699-9F37-9825504D6773}.Release|x64.ActiveCfg = Release|x64
+		{0D3099C3-303A-4699-9F37-9825504D6773}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
