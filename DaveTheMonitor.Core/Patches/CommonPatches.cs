@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DaveTheMonitor.Core.Patches
 {
-    internal static class CommonPatches
+    public static class CommonPatches
     {
         public static void InsertFirst(this List<CodeInstruction> list, Predicate<CodeInstruction> predicate, int offset, IEnumerable<CodeInstruction> instructions, bool moveLabels = false)
         {
