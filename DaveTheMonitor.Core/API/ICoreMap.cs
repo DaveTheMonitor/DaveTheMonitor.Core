@@ -41,8 +41,8 @@ namespace DaveTheMonitor.Core.API
         byte GetAuxDataNoCache(GlobalPoint3D p);
         byte GetAuxHighData(GlobalPoint3D p);
         byte GetAuxHighDataNoCache(GlobalPoint3D p);
-        byte GetAuxFullData(GlobalPoint3D p);
-        byte GetAuxFullDataNoCache(GlobalPoint3D p);
+        ushort GetAuxFullData(GlobalPoint3D p);
+        ushort GetAuxFullDataNoCache(GlobalPoint3D p);
         bool HasChanged(byte auxData);
         bool HasChanged(MapBlock blockData);
         bool HasChanged(GlobalPoint3D p);

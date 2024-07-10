@@ -124,12 +124,12 @@ namespace DaveTheMonitor.Core
             return TMMap.GetAuxHighDataNoCache(p);
         }
 
-        public byte GetAuxFullData(GlobalPoint3D p)
+        public ushort GetAuxFullData(GlobalPoint3D p)
         {
             return TMMap.GetAuxFullData(p);
         }
 
-        public byte GetAuxFullDataNoCache(GlobalPoint3D p)
+        public ushort GetAuxFullDataNoCache(GlobalPoint3D p)
         {
             return TMMap.GetAuxFullDataNoCache(p);
         }
