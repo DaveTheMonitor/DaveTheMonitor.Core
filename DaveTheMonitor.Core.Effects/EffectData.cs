@@ -6,15 +6,20 @@ using System.IO;
 namespace DaveTheMonitor.Core.Effects
 {
     [ActorData]
-    public sealed class EffectData : ICoreData<ICoreActor>, IEnumerable<ActorEffect>
+    public sealed class EffectData : ActorData, IEnumerable<ActorEffect>
     {
-        public ICoreActor Actor { get; private set; }
-        public bool ShouldSave => _effects.Count > 0;
+        public override bool ShouldSave => _effects.Count > 0;
+        public int Effects => _effects.Count;
         private List<ActorEffect> _effects;
 
-        public void Initialize(ICoreActor actor)
+        public override void InitializeCore()
         {
-            Actor = actor;
+            
+        }
+
+        public override void PostDeath(ICoreActor attacker, CoreItem weapon, AttackInfo attack)
+        {
+            Clear();
         }
 
         public void Update()
