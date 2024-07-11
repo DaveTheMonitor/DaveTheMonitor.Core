@@ -138,7 +138,7 @@ namespace DaveTheMonitor.Core.Effects
             return GetEffect(definition) != null;
         }
 
-        public void ReadState(BinaryReader reader, int tmVersion, int coreVersion)
+        public override void ReadState(BinaryReader reader, int tmVersion, int coreVersion)
         {
             reader.ReadInt32();
             int count = reader.ReadInt32();
@@ -157,7 +157,7 @@ namespace DaveTheMonitor.Core.Effects
             }
         }
 
-        public void WriteState(BinaryWriter writer)
+        public override void WriteState(BinaryWriter writer)
         {
             writer.Write(0);
             writer.Write(_effects.Count);
