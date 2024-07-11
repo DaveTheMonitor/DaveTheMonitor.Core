@@ -1,4 +1,5 @@
 ﻿using DaveTheMonitor.Core.API;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,8 @@ namespace DaveTheMonitor.Core.Effects
     {
         public override bool ShouldSave => _effects.Count > 0;
         public int Effects => _effects.Count;
+        public event EventHandler<ActorEffectEventArgs> EffectAdded;
+        public event EventHandler<ActorEffectEventArgs> EffectRemoved;
         private List<ActorEffect> _effects;
 
         public override void InitializeCore()
@@ -60,6 +63,7 @@ namespace DaveTheMonitor.Core.Effects
             effect.SetActor(Actor);
             _effects.Add(effect);
             definition.EffectAdded(effect);
+            Raise_EffectAdded(effect);
             return effect;
         }
 
@@ -74,11 +78,14 @@ namespace DaveTheMonitor.Core.Effects
             {
                 return false;
             }
+
             if (_effects.Remove(effect))
             {
                 effect.Definition.EffectRemoved(effect);
+                Raise_EffectRemoved(effect);
                 return true;
             }
+
             return false;
         }
 
@@ -89,7 +96,18 @@ namespace DaveTheMonitor.Core.Effects
                 ActorEffect effect = _effects[i];
                 _effects.RemoveAt(i);
                 effect.Definition.EffectRemoved(effect);
+                Raise_EffectRemoved(effect);
             }
+        }
+
+        private void Raise_EffectAdded(ActorEffect effect)
+        {
+            EffectAdded?.Invoke(this, new ActorEffectEventArgs(effect));
+        }
+
+        private void Raise_EffectRemoved(ActorEffect effect)
+        {
+            EffectRemoved?.Invoke(this, new ActorEffectEventArgs(effect));
         }
 
         public ActorEffect GetEffect(string id)
