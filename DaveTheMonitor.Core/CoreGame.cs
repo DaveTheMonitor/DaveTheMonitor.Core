@@ -492,6 +492,7 @@ namespace DaveTheMonitor.Core
                     {
                         world.Dispose();
                     }
+                    ScriptRuntime.Dispose();
                 }
 
                 _worlds = null;

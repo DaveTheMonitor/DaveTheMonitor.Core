@@ -128,10 +128,7 @@ namespace DaveTheMonitor.Core
             }
 
             IScriptRuntime runtime = player.Game.ScriptRuntime;
-            runtime.InitializeScript(script);
-            runtime.SetInVar("self", player);
-            runtime.SetInVar("world", player.World);
-            runtime.RunScript();
+            runtime.RunScript(script, new ScriptInVar("self", player), new ScriptInVar("world", player.World));
             log.WriteLine($"output: {runtime.ReturnedValue}");
         }
 
@@ -190,10 +187,7 @@ namespace DaveTheMonitor.Core
                 r.ErrorHandler += HandleRuntimeError;
             }
 
-            runtime.InitializeScript(script);
-            runtime.SetInVar("self", player);
-            runtime.SetInVar("world", player.World);
-            runtime.RunScript();
+            runtime.RunScript(script, new ScriptInVar("self", player), new ScriptInVar("world", player.World));
             log.WriteLine($"output: {runtime.ReturnedValue}");
 
             if (runtime is ScriptRuntime r2)
