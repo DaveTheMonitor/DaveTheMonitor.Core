@@ -36,6 +36,32 @@ namespace DaveTheMonitor.Core
         private static Func<ITMActor, int, ushort, bool> _onItemWithDurabilityUsed
             = AccessTools.Method("StudioForge.TotalMiner.Actor:OnItemWithDurabilityUsed").CreateInvoker<Func<ITMActor, int, ushort, bool>>();
 
+        private static Func<ITMActor, bool, int> _healthLevel
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:HealthLevel").CreateInvoker<Func<ITMActor, bool, int>>();
+        private static Func<ITMActor, bool, int> _attackLevel
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:AttackLevel").CreateInvoker<Func<ITMActor, bool, int>>();
+        private static Func<ITMActor, bool, int> _strengthLevel
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:StrengthLevel").CreateInvoker<Func<ITMActor, bool, int>>();
+        private static Func<ITMActor, bool, int> _defenceLevel
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:DefenceLevel").CreateInvoker<Func<ITMActor, bool, int>>();
+        private static Func<ITMActor, bool, int> _rangedLevel
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:RangedLevel").CreateInvoker<Func<ITMActor, bool, int>>();
+        private static Func<ITMActor, bool, int> _lootingLevel
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:LootingLevel").CreateInvoker<Func<ITMActor, bool, int>>();
+
+        private static Func<ITMActor, int> _healthTotalItemBonus
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:HealthTotalItemBonus").CreateInvoker<Func<ITMActor, int>>();
+        private static Func<ITMActor, int> _attackTotalItemBonus
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:AttackTotalItemBonus").CreateInvoker<Func<ITMActor, int>>();
+        private static Func<ITMActor, int> _strengthTotalItemBonus
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:StrengthTotalItemBonus").CreateInvoker<Func<ITMActor, int>>();
+        private static Func<ITMActor, int> _defenceTotalItemBonus
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:DefenceTotalItemBonus").CreateInvoker<Func<ITMActor, int>>();
+        private static Func<ITMActor, int> _rangedTotalItemBonus
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:RangedTotalItemBonus").CreateInvoker<Func<ITMActor, int>>();
+        private static Func<ITMActor, int> _lootingTotalItemBonus
+            = AccessTools.Method("StudioForge.TotalMiner.Actor:LootingTotalItemBonus").CreateInvoker<Func<ITMActor, int>>();
+
         #endregion
 
         protected CoreDataCollection<ICoreActor> Data;
@@ -550,6 +576,42 @@ namespace DaveTheMonitor.Core
             }
             Animation?.Update();
             UpdateCore();
+        }
+
+        public int GetLevel(SkillType skill, bool addBonuses)
+        {
+            switch (skill)
+            {
+                case SkillType.Health: return _healthLevel(TMActor, addBonuses);
+                case SkillType.Attack: return _attackLevel(TMActor, addBonuses);
+                case SkillType.Strength: return _strengthLevel(TMActor, addBonuses);
+                case SkillType.Defence: return _defenceLevel(TMActor, addBonuses);
+                case SkillType.Ranged: return _rangedLevel(TMActor, addBonuses);
+                case SkillType.Looting: return _lootingLevel(TMActor, addBonuses);
+            }
+
+            // TODO: update this for future TM version
+            int[] levels = new int[18];
+            TMActor.GetSkillLevels(levels);
+            return levels[(int)skill];
+        }
+
+        public int GetStatBonus(SkillType skill)
+        {
+            switch (skill)
+            {
+                case SkillType.Health: return _healthTotalItemBonus(TMActor);
+                case SkillType.Attack: return _attackTotalItemBonus(TMActor);
+                case SkillType.Strength: return _strengthTotalItemBonus(TMActor);
+                case SkillType.Defence: return _defenceTotalItemBonus(TMActor);
+                case SkillType.Ranged: return _rangedTotalItemBonus(TMActor);
+                case SkillType.Looting: return _lootingTotalItemBonus(TMActor);
+            }
+
+            // TODO: update this for future TM version
+            int[] levels = new int[18];
+            TMActor.GetStatBonuses(levels);
+            return levels[(int)skill];
         }
 
         protected virtual void UpdateCore()

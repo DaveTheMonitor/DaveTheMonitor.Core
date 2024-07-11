@@ -458,6 +458,21 @@ namespace DaveTheMonitor.Core.API
         void DamageItem(int slot, int damage);
 
         /// <summary>
+        /// Gets the level of the specified <see cref="SkillType"/>. For players, this is their skill level. For NPCs, this is their combat stats.
+        /// </summary>
+        /// <param name="skill">The skill to get.</param>
+        /// <param name="addBonuses">If true, item bonuses will be added to the total level. 100 points in a stat is equivalent to 1 level. The result is floored, so a base level of 5 and a bonus of 99 will still return 5.</param>
+        /// <returns>The level of the specified <see cref="SkillType"/>.</returns>
+        int GetLevel(SkillType skill, bool addBonuses);
+
+        /// <summary>
+        /// Gets the stat bonus of the specified <see cref="SkillType"/> from equipped items. Every 100 points is equivalent to one skill level.
+        /// </summary>
+        /// <param name="skill">The skill to get.</param>
+        /// <returns>The stat bonus of the specified <see cref="SkillType"/>.</returns>
+        int GetStatBonus(SkillType skill);
+
+        /// <summary>
         /// Called every frame.
         /// </summary>
         void Update();
